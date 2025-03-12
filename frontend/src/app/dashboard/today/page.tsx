@@ -356,11 +356,18 @@ export default function TodayPage() {
       )
 
       if (response.data.recommendedTasks) {
-        // Add project names to recommended tasks - use storeProjects directly
-        const recommendedTasksWithProjects = response.data.recommendedTasks.map((task: Task) => ({
-          ...task,
-          projectName: storeProjects.find((p: any) => p._id === task.projectId)?.name || "No Project"
-        }))
+        // Use projectName from backend if available, otherwise look it up from storeProjects
+        const recommendedTasksWithProjects = response.data.recommendedTasks.map((task: Task) => {
+          // If the task already has a projectName from the backend, use it
+          if (task.projectName) {
+            return task;
+          }
+          // Otherwise, look it up from storeProjects
+          return {
+            ...task,
+            projectName: storeProjects.find((p: any) => p._id === task.projectId)?.name || "No Project"
+          };
+        });
         
         setRecommendedTasks(recommendedTasksWithProjects)
         

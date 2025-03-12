@@ -102,7 +102,7 @@ export function AiTaskSuggestions({
       </DialogTrigger>
       <DialogContent className="max-w-3xl">
         <DialogHeader>
-          <DialogTitle>AI Task Suggestions</DialogTitle>
+          <DialogTitle>AI Task Suggestions for "{projectName}"</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="rounded-md bg-muted p-4">
@@ -112,17 +112,23 @@ export function AiTaskSuggestions({
             </p>
             <div className="space-y-4">
               <div className="grid grid-cols-1 gap-4">
-                <div>
-                  <label htmlFor="ai-title" className="mb-2 block text-sm font-medium">
-                    Title
-                  </label>
+              <div>
+                <label htmlFor="ai-title" className="mb-2 block text-sm font-medium">
+                  Project
+                </label>
+                <div className="flex items-center space-x-2">
                   <Input 
                     id="ai-title" 
                     placeholder="E.g., Meal planning for the week"
                     value={projectName}
                     readOnly
+                    className="font-medium"
                   />
+                  <div className="px-3 py-1 bg-primary/10 text-primary rounded-md text-sm font-medium">
+                    Project
+                  </div>
                 </div>
+              </div>
                 <div>
                   <label htmlFor="ai-description" className="mb-2 block text-sm font-medium">
                     Description (Optional)
@@ -155,6 +161,9 @@ export function AiTaskSuggestions({
                         <h4 className="font-medium">{suggestion.name}</h4>
                         <p className="mt-1 text-sm text-muted-foreground">{suggestion.description}</p>
                         <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            Project: {suggestion.projectName || "No Project"}
+                          </span>
                           <span className={`text-xs ${getPriorityColor(suggestion.priority)}`}>
                             Priority: {suggestion.priority.charAt(0).toUpperCase() + suggestion.priority.slice(1)}
                           </span>
