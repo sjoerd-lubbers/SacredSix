@@ -176,16 +176,47 @@ router.post('/recommend-tasks', auth, async (req, res) => {
 // @access  Private
 router.post('/analyze-reflection', auth, async (req, res) => {
   try {
-    const { content, type } = req.body;
+    const { content, type, reflectionId, questionAnswers } = req.body;
 
-    if (!content) {
-      return res.status(400).json({ message: 'Reflection content is required' });
+    // We need either content, reflectionId, or questionAnswers
+    if (!content && !reflectionId && !questionAnswers) {
+      return res.status(400).json({ message: 'Either reflection content, reflectionId, or questionAnswers is required' });
+    }
+
+    let reflectionContent = content;
+    let reflectionType = type || 'daily';
+    let reflection;
+
+    // If reflectionId is provided, find the reflection
+    if (reflectionId) {
+      reflection = await Reflection.findOne({
+        _id: reflectionId,
+        userId: req.userId
+      });
+
+      if (!reflection) {
+        return res.status(404).json({ message: 'Reflection not found' });
+      }
+
+      reflectionType = reflection.type;
+      
+      // Generate content if not available
+      if (!reflection.content && reflection.questionAnswers && reflection.questionAnswers.length > 0) {
+        reflectionContent = createContentFromQuestionAnswers(reflection.questionAnswers);
+      } else {
+        reflectionContent = reflection.content || '';
+      }
+    } 
+    // If questionAnswers are provided but no content, generate content
+    else if (questionAnswers && !content) {
+      // Helper function from reflections.js
+      reflectionContent = createContentFromQuestionAnswers(questionAnswers);
     }
 
     // Get previous reflections for context
     const previousReflections = await Reflection.find({
       userId: req.userId,
-      type: type || 'daily'
+      type: reflectionType
     })
       .sort({ createdAt: -1 })
       .limit(5)
@@ -195,8 +226,8 @@ router.post('/analyze-reflection', auth, async (req, res) => {
     const prompt = `
       You are an AI productivity coach specializing in analyzing reflections and providing insights.
       
-      The user has submitted a ${type || 'daily'} reflection:
-      "${content}"
+      The user has submitted a ${reflectionType} reflection:
+      "${reflectionContent}"
       
       ${previousReflections.length > 0 ? `
       Here are their previous reflections for context:
@@ -230,23 +261,92 @@ router.post('/analyze-reflection', auth, async (req, res) => {
     // Parse the response
     let aiResponse;
     try {
-      aiResponse = JSON.parse(completion.choices[0].message.content.trim());
+      const responseText = completion.choices[0].message.content.trim();
+      console.log('Raw AI response:', responseText);
+      
+      // Try to clean up the response before parsing
+      const cleanedResponse = responseText
+        // Replace any control characters that might cause JSON parsing issues
+        .replace(/[\u0000-\u001F\u007F-\u009F]/g, '')
+        // Try to extract just the JSON part if there's any text around it
+        .replace(/^[^{]*({.*})[^}]*$/s, '$1');
+      
+      console.log('Cleaned AI response:', cleanedResponse);
+      
+      try {
+        aiResponse = JSON.parse(cleanedResponse);
+      } catch (innerError) {
+        console.error('Error parsing cleaned response, trying fallback:', innerError);
+        // Fallback to a simple regex extraction of the JSON
+        const jsonMatch = responseText.match(/{[\s\S]*}/);
+        if (jsonMatch) {
+          aiResponse = JSON.parse(jsonMatch[0]);
+        } else {
+          throw new Error('Could not extract valid JSON from response');
+        }
+      }
     } catch (error) {
       console.error('Error parsing OpenAI response:', error);
-      return res.status(500).json({ message: 'Failed to process AI analysis' });
+      console.error('Raw response:', completion.choices[0].message.content);
+      
+      // Create a fallback response
+      aiResponse = {
+        analysis: "I couldn't analyze this reflection properly. Please try again or modify your reflection.",
+        suggestions: [
+          "Try to be more specific in your reflection",
+          "Consider focusing on concrete examples",
+          "Break down complex thoughts into simpler statements"
+        ],
+        encouragement: "Keep reflecting regularly - it's a valuable practice for growth!"
+      };
     }
 
-    // Create new reflection
-    const reflection = new Reflection({
-      userId: req.userId,
-      content,
-      type: type || 'daily',
-      aiAnalysis: aiResponse.analysis,
-      aiSuggestions: aiResponse.suggestions
-    });
-
-    // Save reflection to database
-    await reflection.save();
+    // If we have a reflection from reflectionId, update it
+    if (reflection) {
+      reflection.aiAnalysis = aiResponse.analysis;
+      reflection.aiSuggestions = aiResponse.suggestions;
+      await reflection.save();
+    } 
+    // Otherwise, find or create a reflection based on content
+    else if (reflectionContent) {
+      // Find the existing reflection by content
+      const existingReflection = await Reflection.findOne({
+        userId: req.userId,
+        content: reflectionContent
+      });
+      
+      if (existingReflection) {
+        // Update the existing reflection
+        existingReflection.aiAnalysis = aiResponse.analysis;
+        existingReflection.aiSuggestions = aiResponse.suggestions;
+        reflection = await existingReflection.save();
+        
+        console.log('Updated existing reflection with AI analysis');
+      } else {
+        // Create a new reflection if not found
+        let reflectionData = {
+          userId: req.userId,
+          content: reflectionContent,
+          type: reflectionType,
+          aiAnalysis: aiResponse.analysis,
+          aiSuggestions: aiResponse.suggestions
+        };
+        
+        // If questionAnswers were provided, include them
+        if (questionAnswers) {
+          reflectionData.questionAnswers = questionAnswers;
+          reflectionData.isStructured = true;
+        } else {
+          // Extract questionAnswers from content
+          reflectionData.questionAnswers = extractQuestionAnswersFromContent(reflectionType, reflectionContent);
+          reflectionData.isStructured = reflectionContent.startsWith('### ');
+        }
+        
+        reflection = new Reflection(reflectionData);
+        await reflection.save();
+        console.log('Created new reflection with AI analysis');
+      }
+    }
 
     res.json({
       reflection,
@@ -257,6 +357,66 @@ router.post('/analyze-reflection', auth, async (req, res) => {
     res.status(500).json({ message: 'Server error during AI processing' });
   }
 });
+
+// Define the questions for each reflection type (duplicated from reflections.js)
+const DAILY_QUESTIONS = [
+  "Wat ging vandaag goed?",
+  "Wat had ik beter kunnen doen?",
+  "Welke taak gaf me de meeste energie?"
+];
+
+const WEEKLY_QUESTIONS = [
+  "Welke successen heb ik deze week geboekt?",
+  "Wat heb ik geleerd?",
+  "Welke drie prioriteiten stel ik voor de volgende week?"
+];
+
+// Helper function to get questions based on type (duplicated from reflections.js)
+const getQuestionsForType = (type) => {
+  return type === 'daily' ? DAILY_QUESTIONS : WEEKLY_QUESTIONS;
+};
+
+// Helper function to create content from question-answer pairs (duplicated from reflections.js)
+const createContentFromQuestionAnswers = (questionAnswers) => {
+  return questionAnswers.map(qa => `### ${qa.question}\n${qa.answer || ""}`).join('\n\n');
+};
+
+// Helper function to extract question-answer pairs from content (duplicated from reflections.js)
+const extractQuestionAnswersFromContent = (type, content) => {
+  const questions = getQuestionsForType(type);
+  const questionAnswers = [];
+  
+  if (!content.startsWith('### ')) {
+    // For legacy reflections, just put all content in the first question
+    questionAnswers.push({
+      question: questions[0],
+      answer: content
+    });
+    
+    // Add empty answers for the rest of the questions
+    for (let i = 1; i < questions.length; i++) {
+      questionAnswers.push({
+        question: questions[i],
+        answer: ''
+      });
+    }
+    
+    return questionAnswers;
+  }
+  
+  // Extract answers for each question
+  for (const question of questions) {
+    const regex = new RegExp(`### ${question.replace(/\?/g, '\\?')}\\n([\\s\\S]*?)(?=\\n###|$)`);
+    const match = content.match(regex);
+    
+    questionAnswers.push({
+      question,
+      answer: match ? match[1].trim() : ''
+    });
+  }
+  
+  return questionAnswers;
+};
 
 // @route   POST /api/ai/suggest-tasks
 // @desc    Get AI-suggested tasks based on a title and description
