@@ -79,7 +79,8 @@ export default function DashboardLayout({
     { href: "/dashboard/today", label: "Today", icon: CheckSquare },
     { href: "/dashboard/projects", label: "Projects", icon: Calendar },
     { href: "/dashboard/shared-projects", label: "Shared Projects", icon: Users },
-    { href: "/dashboard/sacred-six", label: "Sacred Six", icon: Sparkles },
+    { href: "/dashboard/reflections", label: "Reflections", icon: BookOpen },
+    { href: "/dashboard/mission-values", label: "Mission & Values", icon: Sparkles },
     { href: "/dashboard/settings", label: "Settings", icon: Settings },
   ]
 

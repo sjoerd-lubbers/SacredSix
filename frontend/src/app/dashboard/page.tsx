@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import axios from "axios"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
 import { Calendar, CheckSquare, Clock, ListTodo } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -90,17 +89,7 @@ export default function DashboardPage() {
     fetchData()
   }, [toast])
 
-  // Prepare data for the chart
-  const chartData = [
-    { name: "To Do", value: stats.totalTasks - stats.completedTasks - stats.inProgressTasks },
-    { name: "In Progress", value: stats.inProgressTasks },
-    { name: "Completed", value: stats.completedTasks },
-  ]
-
-  // Get recent tasks
-  const recentTasks = [...tasks]
-    .sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime())
-    .slice(0, 5)
+  // Removed unused chart and recent tasks code
 
   if (isLoading) {
     return <div className="flex h-full items-center justify-center">Loading dashboard data...</div>
@@ -148,63 +137,7 @@ export default function DashboardPage() {
       {/* Completion Rate Card */}
       <CompletionRateCard />
 
-      {/* Chart and Recent Tasks */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* Task Status Chart */}
-        <div className="rounded-lg border bg-card p-4 shadow-sm">
-          <h3 className="mb-4 font-medium">Task Status</h3>
-          <div className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="value" fill="#3b82f6" />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Recent Tasks */}
-        <div className="rounded-lg border bg-card p-4 shadow-sm">
-          <h3 className="mb-4 font-medium">Recent Tasks</h3>
-          {recentTasks.length > 0 ? (
-            <div className="space-y-4">
-              {recentTasks.map((task) => (
-                <div key={task._id} className="flex items-center justify-between rounded-md border p-3">
-                  <div>
-                    <p className="font-medium">{task.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Status: {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
-                    </p>
-                  </div>
-                  <div>
-                    <span
-                      className={`rounded-full px-2 py-1 text-xs font-medium ${
-                        task.priority === "high"
-                          ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300"
-                          : task.priority === "medium"
-                          ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
-                          : "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
-                      }`}
-                    >
-                      {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-muted-foreground">No tasks yet</p>
-          )}
-          <div className="mt-4">
-            <Button variant="outline" className="w-full" asChild>
-              <a href="/dashboard/today">View All Tasks</a>
-            </Button>
-          </div>
-        </div>
-      </div>
+      {/* Removed Task Status and Recent Tasks sections as requested */}
 
       {/* Projects */}
       <div className="rounded-lg border bg-card p-4 shadow-sm">
