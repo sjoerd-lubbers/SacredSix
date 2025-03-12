@@ -152,8 +152,17 @@ router.post('/recommend-tasks', auth, async (req, res) => {
     
     console.log('Recommended tasks:', recommendedTasks.map(t => t.name));
 
+    // Transform the tasks to include project name directly
+    const transformedTasks = recommendedTasks.map(task => {
+      const taskObj = task.toObject();
+      return {
+        ...taskObj,
+        projectName: taskObj.projectId ? taskObj.projectId.name : "No Project"
+      };
+    });
+
     res.json({
-      recommendedTasks,
+      recommendedTasks: transformedTasks,
       aiReasoning: completion.choices[0].message.content
     });
   } catch (error) {
@@ -262,10 +271,12 @@ router.post('/suggest-tasks', auth, async (req, res) => {
 
     // Get project information if provided
     let projectInfo = '';
+    let projectName = '';
     if (projectId) {
-      const project = await Project.findOne({ _id: projectId, userId: req.userId });
+      const project = await Project.findOne({ _id: projectId });
       if (project) {
         projectInfo = `This is for a project called "${project.name}".`;
+        projectName = project.name;
       }
     }
 
@@ -397,8 +408,15 @@ router.post('/suggest-tasks', auth, async (req, res) => {
       ];
     }
 
+    // Add project information to each suggested task
+    const suggestedTasksWithProject = suggestedTasks.map(task => ({
+      ...task,
+      projectId: projectId || null,
+      projectName: projectName || "No Project"
+    }));
+
     res.json({
-      suggestedTasks,
+      suggestedTasks: suggestedTasksWithProject,
       rawResponse: responseText
     });
   } catch (error) {
