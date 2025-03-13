@@ -2,6 +2,14 @@ import { create } from 'zustand';
 import axios from 'axios';
 
 // Define types
+export interface Collaborator {
+  userId: string;
+  role: 'viewer' | 'editor' | 'admin';
+  addedAt: string;
+  name?: string;
+  email?: string;
+}
+
 export interface Project {
   _id: string;
   name: string;
@@ -11,6 +19,7 @@ export interface Project {
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
+  collaborators?: Collaborator[];
 }
 
 interface ProjectsState {
