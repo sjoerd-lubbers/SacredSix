@@ -604,6 +604,7 @@ export default function TodayPage() {
                 <p className="text-sm text-muted-foreground">
                   Select up to 6 tasks for The Daily Sacred Six. {selectedTaskIds.length}/6 selected.
                 </p>
+
               </div>
               <div className="space-y-2">
                 {recommendedTasks.length > 0 ? (
@@ -661,6 +662,12 @@ export default function TodayPage() {
                 <p className="text-sm text-muted-foreground">
                   Tasks from projects tagged with "sacred six". {selectedTaskIds.length}/6 selected.
                 </p>
+                {selectedTaskIds.length > 0 && selectedTaskIds.length < 6 && (
+                  <p className="text-sm text-green-600 dark:text-green-400 mt-1">
+                    Great start! You're on your way with {selectedTaskIds.length} {selectedTaskIds.length === 1 ? 'task' : 'tasks'}. 
+                    Select {6 - selectedTaskIds.length} more to complete your Sacred Six.
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
                 {eligibleTasks.length > 0 ? (
@@ -706,6 +713,19 @@ export default function TodayPage() {
         </div>
       ) : todayTasks.length > 0 ? (
         <div className="space-y-4">
+          {todayTasks.length < 6 && (
+            <div className="rounded-lg border bg-yellow-50 dark:bg-yellow-900/20 p-4 text-yellow-800 dark:text-yellow-200">
+              <h3 className="text-lg font-medium flex items-center">
+                <Sparkles className="h-5 w-5 mr-2 text-yellow-500" />
+                Almost there!
+              </h3>
+              <p>
+                You have {todayTasks.length} {todayTasks.length === 1 ? 'task' : 'tasks'} selected for today. 
+                Select {6 - todayTasks.length} more to complete your Sacred Six and maximize your productivity.
+              </p>
+
+            </div>
+          )}
           {todayTasks.map((task) => (
             <div key={task._id} className="rounded-lg border bg-card p-4 shadow-sm">
               <div className="flex items-start justify-between">

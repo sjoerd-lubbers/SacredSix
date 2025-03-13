@@ -43,15 +43,17 @@ router.post('/recommend-tasks', auth, async (req, res) => {
     const projectIds = projects.map(project => project._id);
     
     // Get all incomplete tasks from user's own tasks and shared projects
-    // Filter for Sacred Six projects only
+    // Filter for Sacred Six projects only (and exclude archived projects)
     const sacredSixProjects = projects.filter(project => 
+      !project.isArchived && // Exclude archived projects
       project.tags && project.tags.some(tag => 
         tag.toLowerCase().includes('sacred') && tag.toLowerCase().includes('six')
       )
     );
     
-    // If no Sacred Six projects found, use all projects
-    const projectsToUse = sacredSixProjects.length > 0 ? sacredSixProjects : projects;
+    // If no Sacred Six projects found, use all active (non-archived) projects
+    const activeProjects = projects.filter(project => !project.isArchived);
+    const projectsToUse = sacredSixProjects.length > 0 ? sacredSixProjects : activeProjects;
     const projectIdsToUse = projectsToUse.map(project => project._id);
     
     console.log('AI using projects:', projectsToUse.map(p => p.name));
