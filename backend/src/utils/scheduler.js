@@ -144,6 +144,30 @@ const updateDailyCompletionRecords = async () => {
 };
 
 /**
+ * Reset all tasks' isSelectedForToday flags
+ */
+const resetDailySacredSix = async () => {
+  try {
+    console.log('Resetting Daily Sacred Six tasks...');
+    
+    // Find all tasks with isSelectedForToday set to true
+    const tasks = await Task.find({ isSelectedForToday: true });
+    
+    console.log(`Found ${tasks.length} tasks selected for today to reset`);
+    
+    // Reset isSelectedForToday to false for all tasks
+    await Task.updateMany(
+      { isSelectedForToday: true },
+      { $set: { isSelectedForToday: false } }
+    );
+    
+    console.log('Daily Sacred Six tasks reset complete');
+  } catch (error) {
+    console.error('Error resetting Daily Sacred Six tasks:', error);
+  }
+};
+
+/**
  * Initialize all schedulers
  */
 const initSchedulers = () => {
@@ -155,6 +179,9 @@ const initSchedulers = () => {
   // Schedule the update of daily completion records at 00:05
   scheduleDaily(updateDailyCompletionRecords, 0, 5);
   
+  // Schedule the reset of Daily Sacred Six tasks at 00:01
+  scheduleDaily(resetDailySacredSix, 0, 1);
+  
   console.log('Schedulers initialized');
 };
 
@@ -162,5 +189,6 @@ module.exports = {
   initSchedulers,
   scheduleDaily,
   resetRecurringTasks,
-  updateDailyCompletionRecords
+  updateDailyCompletionRecords,
+  resetDailySacredSix
 };

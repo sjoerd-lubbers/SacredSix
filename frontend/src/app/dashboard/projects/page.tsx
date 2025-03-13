@@ -1,9 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import axios from "axios"
-import { Plus, Pencil, Trash2, Archive, RotateCcw, GripVertical, Search, X } from "lucide-react"
-import { DragDropContext, Droppable, Draggable, DropResult } from "react-beautiful-dnd"
+import { Plus, Search, X } from "lucide-react"
+import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd"
 
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
@@ -13,47 +12,19 @@ import {
   DialogHeader, 
   DialogTitle, 
   DialogTrigger,
-  DialogFooter,
-  DialogClose
 } from "@/components/ui/dialog"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
 import { useProjectsStore, Project } from "@/lib/store"
-
-const projectSchema = z.object({
-  name: z.string().min(1, "Project name is required"),
-  description: z.string().optional(),
-  tags: z.string().optional(),
-})
-
-type ProjectFormValues = z.infer<typeof projectSchema>
+import { useUserStore } from "@/lib/userStore"
+import ProjectForm, { ProjectFormValues } from "@/components/ProjectForm"
+import ProjectCard from "@/components/ProjectCard"
+import DraggableProjectCard from "@/components/DraggableProjectCard"
 
 export default function ProjectsPage() {
   const { toast } = useToast()
+  const { user } = useUserStore()
   const { 
     projects, 
     activeProjects, 
@@ -63,34 +34,15 @@ export default function ProjectsPage() {
     updateProject, 
     createProject, 
     deleteProject, 
-    toggleArchiveProject: toggleArchive,
+    toggleArchiveProject,
     reorderProjects
   } = useProjectsStore()
   
-  const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isReordering, setIsReordering] = useState(false)
   const [isArchiving, setIsArchiving] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
-
-  const newProjectForm = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      tags: "",
-    },
-  })
-
-  const editProjectForm = useForm<ProjectFormValues>({
-    resolver: zodResolver(projectSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      tags: "",
-    },
-  })
 
   useEffect(() => {
     const initializeData = async () => {
@@ -108,17 +60,7 @@ export default function ProjectsPage() {
     }
     
     initializeData()
-  }, [fetchProjects])
-
-  useEffect(() => {
-    if (editingProject) {
-      editProjectForm.reset({
-        name: editingProject.name,
-        description: editingProject.description || "",
-        tags: editingProject.tags.join(", "),
-      })
-    }
-  }, [editingProject, editProjectForm])
+  }, [fetchProjects, toast])
   
   // Filter projects based on search query and selected tag
   const filteredActiveProjects = activeProjects.filter(project => {
@@ -212,11 +154,11 @@ export default function ProjectsPage() {
     }
   }
   
-  const toggleArchiveProject = async (projectId: string, archive: boolean) => {
+  const handleArchiveToggle = async (projectId: string, archive: boolean) => {
     try {
       setIsArchiving(true)
       
-      const success = await toggleArchive(projectId, archive)
+      const success = await toggleArchiveProject(projectId, archive)
       
       if (success) {
         toast({
@@ -244,7 +186,7 @@ export default function ProjectsPage() {
     }
   }
 
-  const onCreateProject = async (data: ProjectFormValues) => {
+  const handleCreateProject = async (data: ProjectFormValues) => {
     setIsSubmitting(true)
     try {
       const tagsArray = data.tags 
@@ -258,12 +200,6 @@ export default function ProjectsPage() {
       })
 
       if (newProject) {
-        newProjectForm.reset({
-          name: "",
-          description: "",
-          tags: "",
-        })
-
         toast({
           title: "Project created",
           description: "Your project has been created successfully.",
@@ -287,37 +223,24 @@ export default function ProjectsPage() {
     }
   }
 
-  const onUpdateProject = async (data: ProjectFormValues) => {
-    if (!editingProject) return
-
+  const handleUpdateProject = async (projectId: string, data: Partial<Project>): Promise<Project | null> => {
     setIsSubmitting(true)
     try {
-      const tagsArray = data.tags 
-        ? data.tags.split(",").map(tag => tag.trim()).filter(tag => tag !== "") 
-        : []
-
-      const updatedProject = await updateProject(
-        editingProject._id, 
-        {
-          name: data.name,
-          description: data.description,
-          tags: tagsArray
-        }
-      )
+      const updatedProject = await updateProject(projectId, data)
       
       if (updatedProject) {
-        setEditingProject(null)
-
         toast({
           title: "Project updated",
           description: "Your project has been updated successfully.",
         })
+        return updatedProject
       } else {
         toast({
           variant: "destructive",
           title: "Error",
           description: "Failed to update project. Please try again.",
         })
+        return null
       }
     } catch (error) {
       console.error("Error updating project:", error)
@@ -326,12 +249,13 @@ export default function ProjectsPage() {
         title: "Error",
         description: "Failed to update project. Please try again.",
       })
+      return null
     } finally {
       setIsSubmitting(false)
     }
   }
 
-  const onDeleteProject = async (projectId: string) => {
+  const handleDeleteProject = async (projectId: string) => {
     try {
       const success = await deleteProject(projectId)
 
@@ -361,300 +285,6 @@ export default function ProjectsPage() {
     return <div className="flex h-full items-center justify-center">Loading projects...</div>
   }
 
-  const renderProjectCard = (project: Project) => (
-    <div key={project._id} className="rounded-lg border bg-card p-4 shadow-sm">
-      <div className="flex items-start justify-between">
-        <div>
-          <h3 className="font-medium">{project.name}</h3>
-          {project.description && (
-            <p className="mt-1 text-sm text-muted-foreground">{project.description}</p>
-          )}
-          {project.tags.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {project.tags.map((tag, index) => (
-                <Badge
-                  key={index}
-                  className={`cursor-pointer hover:bg-primary/20 ${selectedTag === tag ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}
-                  onClick={() => handleTagClick(tag)}
-                >
-                  {tag}
-                </Badge>
-              ))}
-            </div>
-          )}
-          <p className="mt-2 text-xs text-muted-foreground">
-            Created: {new Date(project.createdAt).toLocaleDateString()}
-          </p>
-        </div>
-        <div className="flex space-x-2">
-          {!project.isArchived && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => toggleArchiveProject(project._id, true)}
-              disabled={isArchiving}
-              title="Archive project"
-            >
-              <Archive className="h-4 w-4" />
-            </Button>
-          )}
-          {project.isArchived && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => toggleArchiveProject(project._id, false)}
-              disabled={isArchiving}
-              title="Restore project"
-            >
-              <RotateCcw className="h-4 w-4" />
-            </Button>
-          )}
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setEditingProject(project)}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Edit Project</DialogTitle>
-              </DialogHeader>
-              <Form {...editProjectForm}>
-                <form onSubmit={editProjectForm.handleSubmit(onUpdateProject)} className="space-y-4">
-                  <FormField
-                    control={editProjectForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter project name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={editProjectForm.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="Enter project description" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={editProjectForm.control}
-                    name="tags"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tags (Optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter tags separated by commas" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">Cancel</Button>
-                    </DialogClose>
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? "Updating..." : "Update Project"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
-            </DialogContent>
-          </Dialog>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Delete Project</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Are you sure you want to delete this project? This action cannot be undone.
-                  All tasks associated with this project will also be deleted.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => onDeleteProject(project._id)}>
-                  Delete
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
-      </div>
-      <div className="mt-4">
-        <Button variant="outline" size="sm" className="w-full" asChild>
-          <a href={`/dashboard/projects/${project._id}`}>View Tasks</a>
-        </Button>
-      </div>
-    </div>
-  )
-
-  const renderDraggableProjectCard = (project: Project, index: number) => (
-    <Draggable key={project._id} draggableId={project._id} index={index}>
-      {(provided) => (
-        <div
-          ref={provided.innerRef}
-          {...provided.draggableProps}
-          className="rounded-lg border bg-card p-4 shadow-sm w-full"
-        >
-          <div className="flex items-start justify-between">
-            <div className="flex items-start space-x-2">
-              <div {...provided.dragHandleProps} className="mt-1 cursor-grab">
-                <GripVertical className="h-5 w-5 text-muted-foreground" />
-              </div>
-              <div>
-                <h3 className="font-medium">{project.name}</h3>
-                {project.description && (
-                  <p className="mt-1 text-sm text-muted-foreground">{project.description}</p>
-                )}
-                {project.tags.length > 0 && (
-                  <div className="mt-2 flex flex-wrap gap-1">
-                    {project.tags.map((tag, index) => (
-                      <Badge
-                        key={index}
-                        className={`cursor-pointer hover:bg-primary/20 ${selectedTag === tag ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}
-                        onClick={() => handleTagClick(tag)}
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                )}
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Created: {new Date(project.createdAt).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-            <div className="flex space-x-2">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => toggleArchiveProject(project._id, true)}
-                disabled={isArchiving}
-                title="Archive project"
-              >
-                <Archive className="h-4 w-4" />
-              </Button>
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setEditingProject(project)}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Edit Project</DialogTitle>
-                  </DialogHeader>
-                  <Form {...editProjectForm}>
-                    <form onSubmit={editProjectForm.handleSubmit(onUpdateProject)} className="space-y-4">
-                      <FormField
-                        control={editProjectForm.control}
-                        name="name"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Project Name</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter project name" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={editProjectForm.control}
-                        name="description"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Description (Optional)</FormLabel>
-                            <FormControl>
-                              <Textarea placeholder="Enter project description" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <FormField
-                        control={editProjectForm.control}
-                        name="tags"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>Tags (Optional)</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Enter tags separated by commas" {...field} />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      <DialogFooter>
-                        <DialogClose asChild>
-                          <Button type="button" variant="outline">Cancel</Button>
-                        </DialogClose>
-                        <Button type="submit" disabled={isSubmitting}>
-                          {isSubmitting ? "Updating..." : "Update Project"}
-                        </Button>
-                      </DialogFooter>
-                    </form>
-                  </Form>
-                </DialogContent>
-              </Dialog>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Project</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete this project? This action cannot be undone.
-                      All tasks associated with this project will also be deleted.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => onDeleteProject(project._id)}>
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </div>
-          <div className="mt-4">
-            <Button variant="outline" size="sm" className="w-full" asChild>
-              <a href={`/dashboard/projects/${project._id}`}>View Tasks</a>
-            </Button>
-          </div>
-        </div>
-      )}
-    </Draggable>
-  )
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
@@ -672,57 +302,12 @@ export default function ProjectsPage() {
             <DialogHeader>
               <DialogTitle>Create New Project</DialogTitle>
             </DialogHeader>
-            <Form {...newProjectForm}>
-              <form onSubmit={newProjectForm.handleSubmit(onCreateProject)} className="space-y-4">
-                <FormField
-                  control={newProjectForm.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Project Name</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter project name" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={newProjectForm.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description (Optional)</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Enter project description" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={newProjectForm.control}
-                  name="tags"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Tags (Optional)</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Enter tags separated by commas" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <DialogFooter>
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline">Cancel</Button>
-                  </DialogClose>
-                  <Button type="submit" disabled={isSubmitting}>
-                    {isSubmitting ? "Creating..." : "Create Project"}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
+            <ProjectForm
+              onSubmit={handleCreateProject}
+              isSubmitting={isSubmitting}
+              submitLabel="Create Project"
+              submittingLabel="Creating..."
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -796,9 +381,22 @@ export default function ProjectsPage() {
                       ref={provided.innerRef}
                       className="flex flex-col gap-4 min-h-[200px] p-4 border border-dashed border-gray-300 rounded-lg"
                     >
-                      {filteredActiveProjects.map((project, index) => 
-                        renderDraggableProjectCard(project, index)
-                      )}
+                      {filteredActiveProjects.map((project, index) => (
+                        <DraggableProjectCard
+                          key={project._id}
+                          project={project}
+                          index={index}
+                          user={user}
+                          selectedTag={selectedTag}
+                          isArchiving={isArchiving}
+                          isSubmitting={isSubmitting}
+                          onTagClick={handleTagClick}
+                          onArchiveToggle={handleArchiveToggle}
+                          onUpdate={handleUpdateProject}
+                          onDelete={handleDeleteProject}
+                          onProjectUpdated={() => fetchProjects(true)}
+                        />
+                      ))}
                       {provided.placeholder}
                     </div>
                   )}
@@ -823,57 +421,12 @@ export default function ProjectsPage() {
                       <DialogHeader>
                         <DialogTitle>Create New Project</DialogTitle>
                       </DialogHeader>
-                      <Form {...newProjectForm}>
-                        <form onSubmit={newProjectForm.handleSubmit(onCreateProject)} className="space-y-4">
-                          <FormField
-                            control={newProjectForm.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Project Name</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Enter project name" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={newProjectForm.control}
-                            name="description"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Description (Optional)</FormLabel>
-                                <FormControl>
-                                  <Textarea placeholder="Enter project description" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={newProjectForm.control}
-                            name="tags"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Tags (Optional)</FormLabel>
-                                <FormControl>
-                                  <Input placeholder="Enter tags separated by commas" {...field} />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <DialogFooter>
-                            <DialogClose asChild>
-                              <Button type="button" variant="outline">Cancel</Button>
-                            </DialogClose>
-                            <Button type="submit" disabled={isSubmitting}>
-                              {isSubmitting ? "Creating..." : "Create Project"}
-                            </Button>
-                          </DialogFooter>
-                        </form>
-                      </Form>
+                      <ProjectForm
+                        onSubmit={handleCreateProject}
+                        isSubmitting={isSubmitting}
+                        submitLabel="Create Project"
+                        submittingLabel="Creating..."
+                      />
                     </DialogContent>
                   </Dialog>
                 )}
@@ -883,7 +436,21 @@ export default function ProjectsPage() {
           <TabsContent value="archived" className="mt-6">
             {filteredArchivedProjects.length > 0 ? (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredArchivedProjects.map(project => renderProjectCard(project))}
+                {filteredArchivedProjects.map(project => (
+                  <ProjectCard
+                    key={project._id}
+                    project={project}
+                    user={user}
+                    selectedTag={selectedTag}
+                    isArchiving={isArchiving}
+                    isSubmitting={isSubmitting}
+                    onTagClick={handleTagClick}
+                    onArchiveToggle={handleArchiveToggle}
+                    onUpdate={handleUpdateProject}
+                    onDelete={handleDeleteProject}
+                    onProjectUpdated={() => fetchProjects(true)}
+                  />
+                ))}
               </div>
             ) : (
               <div className="rounded-lg border bg-card p-8 text-center shadow-sm">
@@ -913,57 +480,12 @@ export default function ProjectsPage() {
               <DialogHeader>
                 <DialogTitle>Create New Project</DialogTitle>
               </DialogHeader>
-              <Form {...newProjectForm}>
-                <form onSubmit={newProjectForm.handleSubmit(onCreateProject)} className="space-y-4">
-                  <FormField
-                    control={newProjectForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Project Name</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter project name" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={newProjectForm.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="Enter project description" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={newProjectForm.control}
-                    name="tags"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Tags (Optional)</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter tags separated by commas" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <DialogFooter>
-                    <DialogClose asChild>
-                      <Button type="button" variant="outline">Cancel</Button>
-                    </DialogClose>
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? "Creating..." : "Create Project"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
+              <ProjectForm
+                onSubmit={handleCreateProject}
+                isSubmitting={isSubmitting}
+                submitLabel="Create Project"
+                submittingLabel="Creating..."
+              />
             </DialogContent>
           </Dialog>
         </div>

@@ -321,9 +321,7 @@ export default function ReflectionsPage() {
           </div>
         </div>
         <CardTitle className="mt-2 line-clamp-1">
-          {reflection.content ? reflection.content.split('\n')[0] : 
-           reflection.questionAnswers && reflection.questionAnswers.length > 0 ? 
-           reflection.questionAnswers[0].question : "Reflection"}
+          {reflection.content.split('\n')[0]}
         </CardTitle>
       </CardHeader>
       <CardContent className="flex-grow">
