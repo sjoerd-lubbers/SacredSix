@@ -7,6 +7,7 @@ import { Calendar, CheckSquare, Clock, ListTodo } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { CompletionRateCard } from "@/components/CompletionRateCard"
+import { Sparkline } from "@/components/Sparkline"
 
 interface Task {
   _id: string
@@ -23,6 +24,12 @@ interface Project {
   _id: string
   name: string
   taskCount?: number
+  isArchived?: boolean
+}
+
+interface SparklineData {
+  date: string
+  count: number
 }
 
 export default function DashboardPage() {
@@ -35,6 +42,13 @@ export default function DashboardPage() {
     completedTasks: 0,
     inProgressTasks: 0,
     todayTasks: 0,
+  })
+  const [sparklineData, setSparklineData] = useState<{
+    creationSparkline: SparklineData[],
+    completionSparkline: SparklineData[]
+  }>({
+    creationSparkline: [],
+    completionSparkline: []
   })
 
   useEffect(() => {
@@ -55,18 +69,27 @@ export default function DashboardPage() {
         const projectsResponse = await axios.get("http://localhost:5000/api/projects", config)
         
         // Count tasks per project
-        const projectsWithTaskCount = projectsResponse.data.map((project: Project) => ({
+        const projectsWithTaskCount = projectsResponse.data.filter(
+          (project: Project) => !project.isArchived // Exclude archived projects
+        ).map((project: Project) => ({
           ...project,
           taskCount: tasksResponse.data.filter((task: Task) => task.projectId === project._id).length
         }))
         
         setProjects(projectsWithTaskCount)
 
-        // Calculate stats
-        const totalTasks = tasksResponse.data.length
-        const completedTasks = tasksResponse.data.filter((task: Task) => task.status === "done").length
-        const inProgressTasks = tasksResponse.data.filter((task: Task) => task.status === "in_progress").length
-        const todayTasks = tasksResponse.data.filter((task: Task) => task.isSelectedForToday).length
+        // Calculate stats - exclude tasks from archived projects
+        const activeProjects = projectsResponse.data.filter((project: Project) => !project.isArchived)
+        const activeProjectIds = activeProjects.map((project: Project) => project._id)
+        
+        const activeTasks = tasksResponse.data.filter(
+          (task: Task) => activeProjectIds.includes(task.projectId)
+        )
+        
+        const totalTasks = activeTasks.length
+        const completedTasks = activeTasks.filter((task: Task) => task.status === "done").length
+        const inProgressTasks = activeTasks.filter((task: Task) => task.status === "in_progress").length
+        const todayTasks = activeTasks.filter((task: Task) => task.isSelectedForToday).length
 
         setStats({
           totalTasks,
@@ -74,6 +97,10 @@ export default function DashboardPage() {
           inProgressTasks,
           todayTasks,
         })
+        
+        // Fetch sparkline data
+        const sparklineResponse = await axios.get("http://localhost:5000/api/tasks/stats/sparkline", config)
+        setSparklineData(sparklineResponse.data)
       } catch (error) {
         console.error("Error fetching data:", error)
         toast({
@@ -109,14 +136,40 @@ export default function DashboardPage() {
             <ListTodo className="h-5 w-5 text-primary" />
             <h3 className="font-medium">Total Tasks</h3>
           </div>
-          <p className="mt-2 text-3xl font-bold">{stats.totalTasks}</p>
+          <div className="flex items-end justify-between">
+            <p className="mt-2 text-3xl font-bold">{stats.totalTasks}</p>
+            {sparklineData.creationSparkline.length > 0 && (
+              <div className="mb-1">
+                <Sparkline 
+                  data={sparklineData.creationSparkline.map(d => d.count)} 
+                  width={100} 
+                  height={30} 
+                  color="#3b82f6" // Blue color
+                />
+              </div>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Task creation trend (30 days)</p>
         </div>
         <div className="rounded-lg border bg-card p-4 shadow-sm">
           <div className="flex items-center space-x-2">
             <CheckSquare className="h-5 w-5 text-primary" />
             <h3 className="font-medium">Completed</h3>
           </div>
-          <p className="mt-2 text-3xl font-bold">{stats.completedTasks}</p>
+          <div className="flex items-end justify-between">
+            <p className="mt-2 text-3xl font-bold">{stats.completedTasks}</p>
+            {sparklineData.completionSparkline.length > 0 && (
+              <div className="mb-1">
+                <Sparkline 
+                  data={sparklineData.completionSparkline.map(d => d.count)} 
+                  width={100} 
+                  height={30} 
+                  color="#22c55e" // Green color
+                />
+              </div>
+            )}
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">Task completion trend (30 days)</p>
         </div>
         <div className="rounded-lg border bg-card p-4 shadow-sm">
           <div className="flex items-center space-x-2">

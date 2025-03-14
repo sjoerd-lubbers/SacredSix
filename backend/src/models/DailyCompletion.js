@@ -18,6 +18,10 @@ const DailyCompletionSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  tasksOpen: {
+    type: Number,
+    default: 0
+  },
   isFullyCompleted: {
     type: Boolean,
     default: false
