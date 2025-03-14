@@ -384,6 +384,93 @@ router.put('/today/select', auth, async (req, res) => {
   }
 });
 
+// @route   GET /api/tasks/stats/sparkline
+// @desc    Get task creation and completion data for sparklines
+// @access  Private
+router.get('/stats/sparkline', auth, async (req, res) => {
+  try {
+    // Get the last 30 days of data
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    // Get all tasks for the user (including from shared projects)
+    const projects = await Project.find({
+      $or: [
+        { ownerId: req.userId },
+        { 'collaborators.userId': req.userId }
+      ],
+      isArchived: false // Exclude archived projects
+    });
+    
+    const projectIds = projects.map(project => project._id);
+    
+    // Get all tasks created by the user or in projects the user has access to
+    const tasks = await Task.find({
+      $or: [
+        { userId: req.userId }, // Tasks created by the user
+        { projectId: { $in: projectIds } } // Tasks from projects the user has access to
+      ],
+      createdAt: { $gte: thirtyDaysAgo }
+    });
+    
+    // Group tasks by creation date
+    const creationData = {};
+    const completionData = {};
+    
+    // Initialize data for the last 30 days
+    for (let i = 0; i < 30; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateString = date.toISOString().split('T')[0];
+      creationData[dateString] = 0;
+      completionData[dateString] = 0;
+    }
+    
+    // Count tasks created per day
+    tasks.forEach(task => {
+      const dateString = task.createdAt.toISOString().split('T')[0];
+      if (creationData[dateString] !== undefined) {
+        creationData[dateString]++;
+      }
+    });
+    
+    // Count tasks completed per day
+    // We'll use the updatedAt field for tasks with status 'done'
+    const completedTasks = await Task.find({
+      $or: [
+        { userId: req.userId }, // Tasks created by the user
+        { projectId: { $in: projectIds } } // Tasks from projects the user has access to
+      ],
+      status: 'done',
+      updatedAt: { $gte: thirtyDaysAgo }
+    });
+    
+    completedTasks.forEach(task => {
+      const dateString = task.updatedAt.toISOString().split('T')[0];
+      if (completionData[dateString] !== undefined) {
+        completionData[dateString]++;
+      }
+    });
+    
+    // Convert to arrays for sparklines
+    const creationSparkline = Object.keys(creationData)
+      .sort()
+      .map(date => ({ date, count: creationData[date] }));
+    
+    const completionSparkline = Object.keys(completionData)
+      .sort()
+      .map(date => ({ date, count: completionData[date] }));
+    
+    res.json({
+      creationSparkline,
+      completionSparkline
+    });
+  } catch (error) {
+    console.error('Error fetching sparkline data:', error);
+    res.status(500).send('Server error');
+  }
+});
+
 // @route   DELETE /api/tasks/:id
 // @desc    Delete a task
 // @access  Private

@@ -640,11 +640,6 @@ export default function TodayPage() {
                               Recurring: {task.recurringDays?.map(day => day.slice(0, 3)).join(", ")}
                             </span>
                           )}
-                      {task.isRecurring && (
-                        <span className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 px-2 py-1 rounded-full">
-                          Recurring: {task.recurringDays?.map(day => day.slice(0, 3)).join(", ")}
-                        </span>
-                      )}
                         </div>
                       </div>
                     </div>

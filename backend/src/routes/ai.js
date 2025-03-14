@@ -135,16 +135,83 @@ router.post('/recommend-tasks', auth, async (req, res) => {
     let recommendedTaskIds;
     try {
       const responseText = completion.choices[0].message.content.trim();
-      recommendedTaskIds = JSON.parse(responseText);
+      console.log('Raw AI response for task recommendations:', responseText);
       
-      // Validate that we got exactly 6 task IDs or fewer if there aren't enough tasks
-      const maxTasks = Math.min(6, incompleteTasks.length);
-      if (!Array.isArray(recommendedTaskIds) || recommendedTaskIds.length > maxTasks) {
-        throw new Error('Invalid response format');
+      // First try direct JSON parsing
+      try {
+        recommendedTaskIds = JSON.parse(responseText);
+      } catch (parseError) {
+        console.log('Direct JSON parsing failed, attempting to extract JSON array');
+        
+        // Try to extract a JSON array using regex
+        const arrayMatch = responseText.match(/\[(.*?)\]/s);
+        if (arrayMatch) {
+          const arrayText = arrayMatch[0];
+          console.log('Extracted array text:', arrayText);
+          try {
+            recommendedTaskIds = JSON.parse(arrayText);
+          } catch (arrayParseError) {
+            console.error('Error parsing extracted array:', arrayParseError);
+            throw arrayParseError;
+          }
+        } else {
+          // If no JSON array found, try to extract task IDs directly
+          console.log('No JSON array found, extracting IDs directly');
+          const idMatches = responseText.match(/["']([0-9a-fA-F]{24})["']/g);
+          if (idMatches && idMatches.length > 0) {
+            recommendedTaskIds = idMatches.map(match => match.replace(/["']/g, ''));
+            console.log('Extracted IDs:', recommendedTaskIds);
+          } else {
+            throw new Error('Could not extract task IDs from response');
+          }
+        }
       }
+      
+      // Validate that we got task IDs
+      if (!Array.isArray(recommendedTaskIds) || recommendedTaskIds.length === 0) {
+        throw new Error('Invalid response format - not an array or empty array');
+      }
+      
+      // Limit to max 6 tasks or fewer if there aren't enough tasks
+      const maxTasks = Math.min(6, incompleteTasks.length);
+      recommendedTaskIds = recommendedTaskIds.slice(0, maxTasks);
+      
+      // Validate that all IDs exist in our tasks
+      const validTaskIds = incompleteTasks.map(task => task._id.toString());
+      recommendedTaskIds = recommendedTaskIds.filter(id => validTaskIds.includes(id));
+      
+      if (recommendedTaskIds.length === 0) {
+        throw new Error('No valid task IDs found in response');
+      }
+      
     } catch (error) {
-      console.error('Error parsing OpenAI response:', error);
-      return res.status(500).json({ message: 'Failed to process AI recommendations' });
+      console.error('Error processing OpenAI response:', error);
+      
+      // Fallback: select tasks based on priority and due date
+      console.log('Using fallback task selection');
+      
+      // Sort tasks by priority (high > medium > low) and then by due date
+      const sortedTasks = [...incompleteTasks].sort((a, b) => {
+        // First sort by priority
+        const priorityOrder = { high: 0, medium: 1, low: 2 };
+        const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
+        if (priorityDiff !== 0) return priorityDiff;
+        
+        // Then by due date (if available)
+        if (a.dueDate && b.dueDate) {
+          return new Date(a.dueDate) - new Date(b.dueDate);
+        }
+        if (a.dueDate) return -1; // a has due date, b doesn't
+        if (b.dueDate) return 1;  // b has due date, a doesn't
+        
+        return 0;
+      });
+      
+      // Take up to 6 tasks
+      const maxTasks = Math.min(6, sortedTasks.length);
+      recommendedTaskIds = sortedTasks.slice(0, maxTasks).map(task => task._id.toString());
+      
+      console.log('Fallback selected task IDs:', recommendedTaskIds);
     }
 
     // Get the recommended tasks (including from shared projects)
@@ -264,7 +331,7 @@ router.post('/analyze-reflection', auth, async (req, res) => {
     let aiResponse;
     try {
       const responseText = completion.choices[0].message.content.trim();
-      console.log('Raw AI response:', responseText);
+      console.log('Raw AI response for reflection analysis:', responseText);
       
       // Try to clean up the response before parsing
       const cleanedResponse = responseText
@@ -279,16 +346,62 @@ router.post('/analyze-reflection', auth, async (req, res) => {
         aiResponse = JSON.parse(cleanedResponse);
       } catch (innerError) {
         console.error('Error parsing cleaned response, trying fallback:', innerError);
-        // Fallback to a simple regex extraction of the JSON
-        const jsonMatch = responseText.match(/{[\s\S]*}/);
+        
+        // Try more aggressive JSON extraction
+        const jsonMatch = responseText.match(/{[\s\S]*?}/);
         if (jsonMatch) {
-          aiResponse = JSON.parse(jsonMatch[0]);
+          try {
+            aiResponse = JSON.parse(jsonMatch[0]);
+          } catch (jsonError) {
+            console.error('Error parsing extracted JSON:', jsonError);
+            throw jsonError;
+          }
         } else {
-          throw new Error('Could not extract valid JSON from response');
+          // If we can't extract JSON, try to extract the analysis, suggestions, and encouragement directly
+          console.log('No JSON object found, extracting parts directly');
+          
+          // Extract analysis
+          let analysis = "";
+          const analysisMatch = responseText.match(/analysis[:\s]+(.*?)(?=suggestions|$)/is);
+          if (analysisMatch && analysisMatch[1]) {
+            analysis = analysisMatch[1].trim();
+          }
+          
+          // Extract suggestions
+          let suggestions = [];
+          const suggestionsMatches = responseText.match(/\d+\.\s+(.*?)(?=\d+\.|encouragement|$)/g);
+          if (suggestionsMatches) {
+            suggestions = suggestionsMatches.map(s => s.replace(/^\d+\.\s+/, '').trim());
+          }
+          
+          // Extract encouragement
+          let encouragement = "";
+          const encouragementMatch = responseText.match(/encouragement[:\s]+(.*?)(?=$)/is);
+          if (encouragementMatch && encouragementMatch[1]) {
+            encouragement = encouragementMatch[1].trim();
+          }
+          
+          if (analysis || suggestions.length > 0 || encouragement) {
+            aiResponse = {
+              analysis: analysis || "Analysis not available",
+              suggestions: suggestions.length > 0 ? suggestions : ["No specific suggestions available"],
+              encouragement: encouragement || "Keep up the good work!"
+            };
+          } else {
+            throw new Error('Could not extract analysis parts from response');
+          }
         }
       }
+      
+      // Validate the response structure
+      if (!aiResponse.analysis) aiResponse.analysis = "Analysis not available";
+      if (!aiResponse.suggestions || !Array.isArray(aiResponse.suggestions) || aiResponse.suggestions.length === 0) {
+        aiResponse.suggestions = ["Focus on specific achievements", "Break down complex tasks", "Set clear priorities"];
+      }
+      if (!aiResponse.encouragement) aiResponse.encouragement = "Keep up the good work!";
+      
     } catch (error) {
-      console.error('Error parsing OpenAI response:', error);
+      console.error('Error processing AI response:', error);
       console.error('Raw response:', completion.choices[0].message.content);
       
       // Create a fallback response
@@ -502,19 +615,96 @@ router.post('/suggest-tasks', auth, async (req, res) => {
     // Parse the response
     let suggestedTasks;
     const responseText = completion.choices[0].message.content.trim();
+    console.log('Raw AI response for task suggestions:', responseText);
     
     try {
       // First, try direct JSON parsing
       try {
         suggestedTasks = JSON.parse(responseText);
       } catch (parseError) {
-        // If direct parsing fails, try to extract JSON from the text
-        console.log('Direct JSON parsing failed, attempting to extract JSON from text');
-        const jsonMatch = responseText.match(/\[[\s\S]*\]/);
-        if (jsonMatch) {
-          suggestedTasks = JSON.parse(jsonMatch[0]);
+        console.log('Direct JSON parsing failed, attempting to extract JSON array');
+        
+        // Try to extract a JSON array using regex
+        const arrayMatch = responseText.match(/\[([\s\S]*)\]/s);
+        if (arrayMatch) {
+          const arrayText = arrayMatch[0];
+          console.log('Extracted array text:', arrayText);
+          try {
+            suggestedTasks = JSON.parse(arrayText);
+          } catch (arrayParseError) {
+            console.error('Error parsing extracted array:', arrayParseError);
+            
+            // Try to extract task objects directly
+            const taskObjects = [];
+            const taskMatches = responseText.match(/\{[^{}]*\}/g);
+            if (taskMatches && taskMatches.length > 0) {
+              console.log('Found task objects:', taskMatches.length);
+              
+              for (const taskMatch of taskMatches) {
+                try {
+                  const taskObj = JSON.parse(taskMatch);
+                  if (taskObj.name) {
+                    taskObjects.push(taskObj);
+                  }
+                } catch (objError) {
+                  console.error('Error parsing task object:', objError);
+                }
+              }
+              
+              if (taskObjects.length > 0) {
+                suggestedTasks = taskObjects;
+              } else {
+                throw new Error('Could not parse any valid task objects');
+              }
+            } else {
+              throw new Error('Could not extract task objects from response');
+            }
+          }
         } else {
-          throw new Error('Could not extract JSON from response');
+          // If no JSON array found, try to extract task information directly
+          console.log('No JSON array found, extracting task information directly');
+          
+          // Look for task patterns like "1. Task name: Description"
+          const taskPattern = /(\d+)\.\s+([^:]+):\s+([^(]+)(?:\(([^)]+)\))?\s*(?:Priority:\s*([^,]+))?/g;
+          const tasks = [];
+          let match;
+          
+          while ((match = taskPattern.exec(responseText)) !== null) {
+            const [_, number, name, description, estimatedTime, priority] = match;
+            
+            // Try to parse estimated time
+            let timeValue = 1;
+            if (estimatedTime) {
+              const timeMatch = estimatedTime.match(/(\d+(?:\.\d+)?)/);
+              if (timeMatch) {
+                timeValue = parseFloat(timeMatch[1]);
+              }
+            }
+            
+            // Determine priority
+            let priorityValue = "medium";
+            if (priority) {
+              const priorityLower = priority.toLowerCase().trim();
+              if (priorityLower.includes("high")) {
+                priorityValue = "high";
+              } else if (priorityLower.includes("low")) {
+                priorityValue = "low";
+              }
+            }
+            
+            tasks.push({
+              name: name.trim(),
+              description: description.trim(),
+              estimatedTime: timeValue,
+              priority: priorityValue
+            });
+          }
+          
+          if (tasks.length > 0) {
+            suggestedTasks = tasks;
+          } else {
+            throw new Error('Could not extract task information from response');
+          }
         }
       }
       
@@ -531,39 +721,46 @@ router.post('/suggest-tasks', auth, async (req, res) => {
         priority: ['high', 'medium', 'low'].includes(task.priority) ? task.priority : 'medium'
       }));
       
+      // Limit to 10 tasks
+      suggestedTasks = suggestedTasks.slice(0, 10);
+      
     } catch (error) {
-      console.error('Error parsing OpenAI response:', error);
+      console.error('Error processing OpenAI response:', error);
       console.error('Raw response:', responseText);
       
-      // Create fallback tasks if parsing fails
+      // Create fallback tasks based on the title and description
+      const titleWords = title.split(' ');
+      const descriptionWords = description ? description.split(' ') : [];
+      
+      // Generate some generic tasks based on the title
       suggestedTasks = [
         {
-          name: "Review project requirements",
-          description: "Go through all project requirements to ensure nothing is missed",
+          name: `Research ${title}`,
+          description: `Gather information and resources about ${title}`,
           estimatedTime: 1,
           priority: "high"
         },
         {
-          name: "Create task breakdown",
-          description: "Break down the project into smaller, manageable tasks",
+          name: "Create project plan",
+          description: `Develop a detailed plan for ${title} with milestones and deadlines`,
           estimatedTime: 1.5,
           priority: "high"
         },
         {
-          name: "Set up project timeline",
-          description: "Create a timeline with milestones and deadlines",
+          name: "Identify requirements",
+          description: `List all requirements and specifications for ${title}`,
           estimatedTime: 1,
-          priority: "medium"
+          priority: "high"
         },
         {
-          name: "Identify potential risks",
-          description: "Identify and document potential risks and mitigation strategies",
+          name: "Set up project structure",
+          description: "Create the initial structure and organization for the project",
           estimatedTime: 0.5,
           priority: "medium"
         },
         {
-          name: "Allocate resources",
-          description: "Determine what resources are needed for each task",
+          name: "Schedule review meeting",
+          description: "Set up a meeting to review progress and get feedback",
           estimatedTime: 0.5,
           priority: "low"
         }
