@@ -16,7 +16,9 @@ import {
   BookOpen,
   Users,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  Heart,
+  Target
 } from "lucide-react"
 import { useTheme } from "next-themes"
 
@@ -75,20 +77,40 @@ export default function DashboardLayout({
     return <div className="flex h-screen items-center justify-center">Loading...</div>
   }
 
-  // Define navigation items
-  let navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/today", label: "Today", icon: CheckSquare },
-    { href: "/dashboard/projects", label: "Projects", icon: Calendar },
-    { href: "/dashboard/shared-projects", label: "Shared Projects", icon: Users },
-    { href: "/dashboard/sacred-six", label: "Sacred Six", icon: Sparkles },
-    { href: "/dashboard/settings", label: "Settings", icon: Settings },
+  // Define navigation sections
+  const navSections = [
+    {
+      title: "Main",
+      items: [
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/dashboard/today", label: "Today", icon: CheckSquare },
+        { href: "/dashboard/projects", label: "Projects", icon: Calendar },
+        { href: "/dashboard/shared-projects", label: "Shared Projects", icon: Users },
+      ]
+    },
+    {
+      title: "Sacred Method",
+      items: [
+        { href: "/dashboard/method", label: "Method", icon: BookOpen },
+        { href: "/dashboard/personal-mission", label: "Persoonlijke Missie", icon: Target },
+        { href: "/dashboard/reflections", label: "Reflections", icon: BookOpen },
+      ]
+    },
+    {
+      title: "Settings",
+      items: [
+        { href: "/dashboard/settings", label: "Settings", icon: Settings },
+      ]
+    }
   ]
   
-  // Add admin link for admin users
-  if (user.role === "admin") {
-    navItems.push({ href: "/dashboard/admin", label: "Admin", icon: ShieldCheck })
-  }
+  // Add admin section for admin users
+  const adminSection = user.role === "admin" ? {
+    title: "Admin",
+    items: [
+      { href: "/dashboard/admin", label: "Admin", icon: ShieldCheck }
+    ]
+  } : null
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -120,17 +142,47 @@ export default function DashboardLayout({
                 <span className="text-xl font-bold">Sacred Six</span>
               </Link>
             </div>
-            <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className="flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
-                >
-                  <item.icon className="h-5 w-5" />
-                  <span>{item.label}</span>
-                </Link>
+            <nav className="flex-1 space-y-6 p-4 overflow-y-auto">
+              {navSections.map((section, index) => (
+                <div key={index} className="space-y-2">
+                  <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">
+                    {section.title}
+                  </h3>
+                  <div className="space-y-1">
+                    {section.items.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               ))}
+              
+              {/* Admin Section (only for admin users) */}
+              {adminSection && (
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">
+                    {adminSection.title}
+                  </h3>
+                  <div className="space-y-1">
+                    {adminSection.items.map((item) => (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className="flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                      >
+                        <item.icon className="h-5 w-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
             </nav>
             <div className="border-t p-4 bg-background">
               <div className="flex flex-col space-y-3">
