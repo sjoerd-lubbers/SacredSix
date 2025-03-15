@@ -65,11 +65,11 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
     const initials = getInitials(name);
     const backgroundColor = stringToColor(name);
     
-    // Size classes
+    // Size classes - ensure perfect squares with aspect-ratio
     const sizeClasses = {
-      sm: 'h-8 w-8 text-xs',
-      md: 'h-10 w-10 text-sm',
-      lg: 'h-12 w-12 text-base',
+      sm: 'h-8 w-8 text-xs aspect-square',
+      md: 'h-10 w-10 text-sm aspect-square',
+      lg: 'h-12 w-12 text-base aspect-square',
     };
     
     return (
@@ -90,7 +90,7 @@ const Avatar = React.forwardRef<HTMLDivElement, AvatarProps>(
             className="h-full w-full rounded-full object-cover"
           />
         ) : (
-          <span>{initials}</span>
+          <span className="flex h-full w-full items-center justify-center leading-none">{initials}</span>
         )}
       </div>
     );

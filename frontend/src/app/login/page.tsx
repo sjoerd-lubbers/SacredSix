@@ -54,8 +54,32 @@ export default function LoginPage() {
         description: "Welcome back to Sacred Six Productivity!",
       })
       
-      // Redirect to dashboard
-      router.push("/dashboard")
+      // Check if user needs onboarding
+      const user = response.data.user
+      
+      // If user doesn't have mission or values, redirect to onboarding
+      if (!user.mission || !user.values || user.values.length === 0) {
+        router.push("/onboarding")
+      } else {
+        // Check if user has any projects
+        try {
+          const projectsResponse = await axios.get("http://localhost:5000/api/projects", {
+            headers: { Authorization: `Bearer ${response.data.token}` }
+          })
+          
+          if (projectsResponse.data.length === 0) {
+            // No projects, redirect to onboarding
+            router.push("/onboarding")
+          } else {
+            // User has everything set up, redirect to dashboard
+            router.push("/dashboard")
+          }
+        } catch (error) {
+          console.error("Error checking projects:", error)
+          // Default to dashboard if we can't check projects
+          router.push("/dashboard")
+        }
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",

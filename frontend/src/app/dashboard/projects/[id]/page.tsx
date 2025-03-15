@@ -3,49 +3,20 @@
 import { useEffect, useState } from "react"
 import axios from "axios"
 import { useParams, useRouter } from "next/navigation"
-import { Plus, Pencil, Trash2, CheckCircle2, Circle, Clock, Users } from "lucide-react"
+import { Plus, Users, Search } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
-import { RecurringTasksSettings } from "@/components/RecurringTasksSettings"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { 
   Dialog, 
   DialogContent, 
   DialogHeader, 
   DialogTitle, 
   DialogTrigger,
-  DialogFooter,
-  DialogClose,
   DialogDescription
 } from "@/components/ui/dialog"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
@@ -54,6 +25,8 @@ import { z } from "zod"
 import { TaskSortingControls } from "@/components/TaskSortingControls"
 import { AiTaskSuggestions } from "@/components/AiTaskSuggestions"
 import ProjectSharingModal from "@/components/ProjectSharingModal"
+import { TaskItem } from "@/components/TaskItem"
+import { TaskForm } from "@/components/TaskForm"
 
 interface Project {
   _id: string
@@ -92,6 +65,8 @@ interface Task {
   isRecurring?: boolean
   recurringDays?: string[]
   lastCompletedDate?: string
+  createdAt: string
+  updatedAt: string
 }
 
 const taskSchema = z.object({
@@ -121,6 +96,8 @@ export default function ProjectTasksPage() {
   const [currentUserId, setCurrentUserId] = useState<string>("")
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [activeTab, setActiveTab] = useState<"active" | "completed">("active")
+  const [searchQuery, setSearchQuery] = useState<string>("")
 
   const newTaskForm = useForm<TaskFormValues>({
     resolver: zodResolver(taskSchema),
@@ -395,32 +372,6 @@ export default function ProjectTasksPage() {
     }
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "done":
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />
-      case "in_progress":
-        return <Clock className="h-5 w-5 text-blue-500" />
-      case "todo":
-        return <Circle className="h-5 w-5 text-gray-400" />
-      default:
-        return <Circle className="h-5 w-5 text-gray-400" />
-    }
-  }
-
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return "text-red-500 dark:text-red-400"
-      case "medium":
-        return "text-yellow-500 dark:text-yellow-400"
-      case "low":
-        return "text-green-500 dark:text-green-400"
-      default:
-        return "text-muted-foreground"
-    }
-  }
-
   // Handle adding a task from AI suggestions
   const handleAddAiTask = (task: {
     name: string;
@@ -458,10 +409,35 @@ export default function ProjectTasksPage() {
                   (statusOrder[b.status as keyof typeof statusOrder] || 0);
     } else if (sortBy === "name") {
       comparison = a.name.localeCompare(b.name);
+    } else if (sortBy === "updatedAt") {
+      const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      comparison = dateA - dateB;
     }
     
     return sortOrder === "asc" ? comparison : -comparison;
   });
+
+  // Filter tasks based on active tab and search query
+  const getFilteredTasks = (tabValue: "active" | "completed") => {
+    return sortedTasks.filter(task => {
+      // Filter by tab (active vs completed)
+      const tabFilter = tabValue === "active" 
+        ? task.status !== "done" 
+        : task.status === "done";
+      
+      // Filter by search query
+      const searchFilter = searchQuery 
+        ? task.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+          (task.description && task.description.toLowerCase().includes(searchQuery.toLowerCase()))
+        : true;
+      
+      return tabFilter && searchFilter;
+    });
+  };
+
+  const activeTasks = getFilteredTasks("active");
+  const completedTasks = getFilteredTasks("completed");
 
   if (isLoading) {
     return <div className="flex h-full items-center justify-center">Loading project data...</div>
@@ -534,502 +510,152 @@ export default function ProjectTasksPage() {
                   Add a new task to your project.
                 </DialogDescription>
               </DialogHeader>
-              <Form {...newTaskForm}>
-                <form onSubmit={(e) => {
-                  e.preventDefault();
-                  newTaskForm.handleSubmit(onCreateTask)(e);
-                }} className="space-y-4">
-                  <FormField
-                    control={newTaskForm.control}
-                    name="name"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Task Name</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="Enter task name" 
-                            {...field} 
-                            onKeyDown={(e) => {
-                              // Prevent form submission on Enter key
-                              if (e.key === 'Enter') {
-                                e.preventDefault();
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={newTaskForm.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description (Optional)</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Enter task description" 
-                            {...field} 
-                            onKeyDown={(e) => {
-                              // Prevent form submission on Enter key
-                              if (e.key === 'Enter' && e.ctrlKey) {
-                                e.preventDefault();
-                              }
-                            }}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={newTaskForm.control}
-                      name="priority"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Priority</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select priority" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="low">Low</SelectItem>
-                              <SelectItem value="medium">Medium</SelectItem>
-                              <SelectItem value="high">High</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={newTaskForm.control}
-                      name="status"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Status</FormLabel>
-                          <Select 
-                            onValueChange={field.onChange} 
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select status" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              <SelectItem value="todo">To Do</SelectItem>
-                              <SelectItem value="in_progress">In Progress</SelectItem>
-                              <SelectItem value="done">Done</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <FormField
-                      control={newTaskForm.control}
-                      name="dueDate"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Due Date (Optional)</FormLabel>
-                          <FormControl>
-                            <Input type="date" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={newTaskForm.control}
-                      name="estimatedTime"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Estimated Time (mins)</FormLabel>
-                          <FormControl>
-                            <Input type="number" placeholder="60" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                  <FormField
-                    control={newTaskForm.control}
-                    name="isRecurring"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                        <FormControl>
-                          <input
-                            type="checkbox"
-                            checked={field.value}
-                            onChange={field.onChange}
-                            className="h-4 w-4 mt-1"
-                          />
-                        </FormControl>
-                        <div className="space-y-1 leading-none">
-                          <FormLabel>Recurring Task</FormLabel>
-                          <p className="text-sm text-muted-foreground">
-                            This task will automatically repeat on selected days
-                          </p>
-                        </div>
-                      </FormItem>
-                    )}
-                  />
-                  {newTaskForm.watch("isRecurring") && (
-                    <FormField
-                      control={newTaskForm.control}
-                      name="recurringDays"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Recurring Days</FormLabel>
-                          <div className="flex flex-wrap gap-2">
-                            {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => (
-                              <Button
-                                key={day}
-                                type="button"
-                                variant={field.value?.includes(day) ? "default" : "outline"}
-                                onClick={() => {
-                                  const updatedDays = field.value?.includes(day)
-                                    ? field.value.filter((d: string) => d !== day)
-                                    : [...(field.value || []), day];
-                                  field.onChange(updatedDays);
-                                }}
-                                className="capitalize"
-                              >
-                                {day.slice(0, 3)}
-                              </Button>
-                            ))}
-                          </div>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  )}
-                  <DialogFooter>
-                    <Button type="button" variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                      Cancel
-                    </Button>
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? "Creating..." : "Create Task"}
-                    </Button>
-                  </DialogFooter>
-                </form>
-              </Form>
+              <TaskForm 
+                form={newTaskForm} 
+                onSubmit={onCreateTask} 
+                isSubmitting={isSubmitting} 
+                onCancel={() => setCreateDialogOpen(false)} 
+                mode="create" 
+              />
+            </DialogContent>
+          </Dialog>
+          
+          {/* Edit Task Dialog */}
+          <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+            <DialogContent onInteractOutside={(e) => e.preventDefault()}>
+              <DialogHeader>
+                <DialogTitle>Edit Task</DialogTitle>
+                <DialogDescription>
+                  Update the details of your task.
+                </DialogDescription>
+              </DialogHeader>
+              <TaskForm 
+                form={editTaskForm} 
+                onSubmit={onUpdateTask} 
+                isSubmitting={isSubmitting} 
+                onCancel={() => setEditDialogOpen(false)} 
+                mode="edit" 
+              />
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      {/* Sorting Controls Component */}
+      {/* Search and Tabs */}
       {tasks.length > 0 && (
-        <TaskSortingControls
-          sortBy={sortBy}
-          setSortBy={setSortBy}
-          sortOrder={sortOrder}
-          setSortOrder={setSortOrder}
-        />
-      )}
-
-      {tasks.length > 0 ? (
         <div className="space-y-4">
-          {sortedTasks.map((task) => (
-            <div key={task._id} className="rounded-lg border bg-card p-4 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-4">
-                  <button
-                    onClick={() => {
-                      const newStatus = task.status === "done" 
-                        ? "todo" 
-                        : task.status === "in_progress" 
-                          ? "done" 
-                          : "in_progress"
-                      handleStatusChange(task._id, newStatus)
-                    }}
-                    className="mt-1"
-                  >
-                    {getStatusIcon(task.status)}
-                  </button>
-                  <div>
-                    <h3 className="font-medium">{task.name}</h3>
-                    {task.description && (
-                      <p className="mt-1 text-sm text-muted-foreground">{task.description}</p>
-                    )}
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className={`text-xs ${getPriorityColor(task.priority)}`}>
-                        Priority: {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
-                      </span>
-                      {task.dueDate && (
-                        <span className="text-xs text-muted-foreground">
-                          Due: {new Date(task.dueDate).toLocaleDateString()}
-                        </span>
-                      )}
-                      {task.estimatedTime && (
-                        <span className="text-xs text-muted-foreground">
-                          Est. Time: {task.estimatedTime} mins
-                        </span>
-                      )}
-                      {task.isRecurring && (
-                        <span className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 px-2 py-1 rounded-full">
-                          Recurring: {task.recurringDays?.map(day => day.slice(0, 3)).join(", ")}
-                        </span>
-                      )}
-                    </div>
+          {/* Search Bar */}
+          <div className="relative w-full md:w-64">
+            <Input
+              type="text"
+              placeholder="Search tasks..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10"
+            />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          </div>
+          
+          {/* Tabs and Task Lists */}
+          <Tabs defaultValue="active" onValueChange={(value) => setActiveTab(value as "active" | "completed")}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="active">
+                Active Tasks ({activeTasks.length})
+              </TabsTrigger>
+              <TabsTrigger value="completed">
+                Completed Tasks ({completedTasks.length})
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="active" className="space-y-4">
+              {/* Sorting Controls Component */}
+              <TaskSortingControls
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                sortOrder={sortOrder}
+                setSortOrder={setSortOrder}
+              />
+              
+              {/* Active Tasks */}
+              {activeTasks.length > 0 ? (
+                <div className="space-y-4">
+                  {activeTasks.map((task) => (
+                    <TaskItem
+                      key={task._id}
+                      task={task}
+                      onStatusChange={handleStatusChange}
+                      onEdit={(task) => {
+                        setEditingTask(task);
+                        setEditDialogOpen(true);
+                      }}
+                      onDelete={onDeleteTask}
+                      setEditDialogOpen={setEditDialogOpen}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 rounded-full bg-primary/10 p-3">
+                    <Plus className="h-6 w-6 text-primary" />
                   </div>
+                  <h3 className="mb-2 text-lg font-medium">No active tasks</h3>
+                  <p className="mb-4 text-muted-foreground">
+                    {searchQuery 
+                      ? "No tasks match your search criteria." 
+                      : "Create your first task to get started with this project."}
+                  </p>
+                  <Button onClick={() => setCreateDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" /> New Task
+                  </Button>
                 </div>
-                <div className="flex space-x-2">
-                  {/* Edit Task Dialog */}
-                  <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-                    <DialogTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setEditingTask(task);
-                          setEditDialogOpen(true);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                    </DialogTrigger>
-                    <DialogContent onInteractOutside={(e) => e.preventDefault()}>
-                      <DialogHeader>
-                        <DialogTitle>Edit Task</DialogTitle>
-                        <DialogDescription>
-                          Update the details of your task.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <Form {...editTaskForm}>
-                        <form onSubmit={(e) => {
-                          e.preventDefault();
-                          editTaskForm.handleSubmit(onUpdateTask)(e);
-                        }} className="space-y-4">
-                          <FormField
-                            control={editTaskForm.control}
-                            name="name"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Task Name</FormLabel>
-                                <FormControl>
-                                  <Input 
-                                    placeholder="Enter task name" 
-                                    {...field} 
-                                    onKeyDown={(e) => {
-                                      // Prevent form submission on Enter key
-                                      if (e.key === 'Enter') {
-                                        e.preventDefault();
-                                      }
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <FormField
-                            control={editTaskForm.control}
-                            name="description"
-                            render={({ field }) => (
-                              <FormItem>
-                                <FormLabel>Description (Optional)</FormLabel>
-                                <FormControl>
-                                  <Textarea 
-                                    placeholder="Enter task description" 
-                                    {...field} 
-                                    onKeyDown={(e) => {
-                                      // Prevent form submission on Enter key
-                                      if (e.key === 'Enter' && e.ctrlKey) {
-                                        e.preventDefault();
-                                      }
-                                    }}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                              control={editTaskForm.control}
-                              name="priority"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Priority</FormLabel>
-                                  <Select 
-                                    onValueChange={field.onChange} 
-                                    defaultValue={field.value}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select priority" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="low">Low</SelectItem>
-                                      <SelectItem value="medium">Medium</SelectItem>
-                                      <SelectItem value="high">High</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={editTaskForm.control}
-                              name="status"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Status</FormLabel>
-                                  <Select 
-                                    onValueChange={field.onChange} 
-                                    defaultValue={field.value}
-                                  >
-                                    <FormControl>
-                                      <SelectTrigger>
-                                        <SelectValue placeholder="Select status" />
-                                      </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                      <SelectItem value="todo">To Do</SelectItem>
-                                      <SelectItem value="in_progress">In Progress</SelectItem>
-                                      <SelectItem value="done">Done</SelectItem>
-                                    </SelectContent>
-                                  </Select>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          <div className="grid grid-cols-2 gap-4">
-                            <FormField
-                              control={editTaskForm.control}
-                              name="dueDate"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Due Date (Optional)</FormLabel>
-                                  <FormControl>
-                                    <Input type="date" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                            <FormField
-                              control={editTaskForm.control}
-                              name="estimatedTime"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Estimated Time (mins)</FormLabel>
-                                  <FormControl>
-                                    <Input type="number" placeholder="60" {...field} />
-                                  </FormControl>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          </div>
-                          <FormField
-                            control={editTaskForm.control}
-                            name="isRecurring"
-                            render={({ field }) => (
-                              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                                <FormControl>
-                                  <input
-                                    type="checkbox"
-                                    checked={field.value}
-                                    onChange={field.onChange}
-                                    className="h-4 w-4 mt-1"
-                                  />
-                                </FormControl>
-                                <div className="space-y-1 leading-none">
-                                  <FormLabel>Recurring Task</FormLabel>
-                                  <p className="text-sm text-muted-foreground">
-                                    This task will automatically repeat on selected days
-                                  </p>
-                                </div>
-                              </FormItem>
-                            )}
-                          />
-                          {editTaskForm.watch("isRecurring") && (
-                            <FormField
-                              control={editTaskForm.control}
-                              name="recurringDays"
-                              render={({ field }) => (
-                                <FormItem>
-                                  <FormLabel>Recurring Days</FormLabel>
-                                  <div className="flex flex-wrap gap-2">
-                                    {["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"].map((day) => (
-                                      <Button
-                                        key={day}
-                                        type="button"
-                                        variant={field.value?.includes(day) ? "default" : "outline"}
-                                        onClick={() => {
-                                          const updatedDays = field.value?.includes(day)
-                                            ? field.value.filter((d: string) => d !== day)
-                                            : [...(field.value || []), day];
-                                          field.onChange(updatedDays);
-                                        }}
-                                        className="capitalize"
-                                      >
-                                        {day.slice(0, 3)}
-                                      </Button>
-                                    ))}
-                                  </div>
-                                  <FormMessage />
-                                </FormItem>
-                              )}
-                            />
-                          )}
-                          <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
-                              Cancel
-                            </Button>
-                            <Button type="submit" disabled={isSubmitting}>
-                              {isSubmitting ? "Updating..." : "Update Task"}
-                            </Button>
-                          </DialogFooter>
-                        </form>
-                      </Form>
-                    </DialogContent>
-                  </Dialog>
-                  
-                  {/* Delete Task Alert Dialog */}
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon">
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently delete the task.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => onDeleteTask(task._id)}>
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="completed" className="space-y-4">
+              {/* Sorting Controls Component */}
+              <TaskSortingControls
+                sortBy={sortBy}
+                setSortBy={setSortBy}
+                sortOrder={sortOrder}
+                setSortOrder={setSortOrder}
+              />
+              
+              {/* Completed Tasks */}
+              {completedTasks.length > 0 ? (
+                <div className="space-y-4">
+                  {completedTasks.map((task) => (
+                    <TaskItem
+                      key={task._id}
+                      task={task}
+                      onStatusChange={handleStatusChange}
+                      onEdit={(task) => {
+                        setEditingTask(task);
+                        setEditDialogOpen(true);
+                      }}
+                      onDelete={onDeleteTask}
+                      setEditDialogOpen={setEditDialogOpen}
+                    />
+                  ))}
                 </div>
-              </div>
-            </div>
-          ))}
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <div className="mb-4 rounded-full bg-primary/10 p-3">
+                    <Plus className="h-6 w-6 text-primary" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-medium">No completed tasks</h3>
+                  <p className="mb-4 text-muted-foreground">
+                    {searchQuery 
+                      ? "No completed tasks match your search criteria." 
+                      : "Complete some tasks to see them here."}
+                  </p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
-      ) : (
+      )}
+      
+      {tasks.length === 0 && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="mb-4 rounded-full bg-primary/10 p-3">
             <Plus className="h-6 w-6 text-primary" />

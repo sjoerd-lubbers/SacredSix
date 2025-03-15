@@ -23,12 +23,9 @@ import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { Avatar } from "@/components/ui/avatar"
+import DashboardPage from "@/app/dashboard/page"
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export function DashboardBackground() {
   const router = useRouter()
   const { toast } = useToast()
   const { theme, setTheme } = useTheme()
@@ -41,7 +38,6 @@ export default function DashboardLayout({
     const token = localStorage.getItem("token")
 
     if (!storedUser || !token) {
-      router.push("/login")
       return
     }
 
@@ -49,30 +45,11 @@ export default function DashboardLayout({
       setUser(JSON.parse(storedUser))
     } catch (error) {
       console.error("Failed to parse user data:", error)
-      localStorage.removeItem("user")
-      localStorage.removeItem("token")
-      router.push("/login")
     }
-  }, [router])
-
-  const handleLogout = () => {
-    localStorage.removeItem("user")
-    localStorage.removeItem("token")
-    
-    toast({
-      title: "Logged out",
-      description: "You have been successfully logged out.",
-    })
-    
-    router.push("/login")
-  }
-
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark")
-  }
+  }, [])
 
   if (!user) {
-    return <div className="flex h-screen items-center justify-center">Loading...</div>
+    return null
   }
 
   // Define navigation items
@@ -93,43 +70,35 @@ export default function DashboardLayout({
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Mobile Header */}
-      <header className="sticky top-0 z-40 border-b bg-background py-4 md:hidden">
+      <header className="sticky top-0 z-10 border-b bg-background py-4 md:hidden">
         <div className="container flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2">
             <span className="text-xl font-bold">Sacred Six</span>
-          </Link>
+          </div>
           <div className="flex items-center space-x-2">
             <Avatar name={user.name} size="sm" />
-            <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </Button>
           </div>
         </div>
       </header>
 
       <div className="flex flex-1">
         {/* Sidebar */}
-        <aside
-          className={`${
-            isMobileMenuOpen ? "fixed inset-y-0 left-0 z-50" : "hidden"
-          } w-64 border-r bg-background md:fixed md:block md:h-screen flex flex-col`}
-        >
+        <aside className="w-64 border-r bg-background hidden md:block md:fixed md:h-screen flex flex-col">
           <div className="flex flex-col h-full">
             <div className="border-b p-4">
-              <Link href="/dashboard" className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <span className="text-xl font-bold">Sacred Six</span>
-              </Link>
+              </div>
             </div>
             <nav className="flex-1 space-y-1 p-4 overflow-y-auto">
               {navItems.map((item) => (
-                <Link
+                <div
                   key={item.href}
-                  href={item.href}
                   className="flex items-center space-x-2 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground"
                 >
                   <item.icon className="h-5 w-5" />
                   <span>{item.label}</span>
-                </Link>
+                </div>
               ))}
             </nav>
             <div className="border-t p-4 bg-background">
@@ -146,26 +115,19 @@ export default function DashboardLayout({
                     variant="outline" 
                     size="icon" 
                     className="rounded-full bg-primary/10 hover:bg-primary/20 flex-shrink-0"
-                    onClick={toggleTheme}
                   >
                     {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                   </Button>
                 </div>
               </div>
-              <Button
-                variant="outline"
-                className="mt-4 w-full justify-start"
-                onClick={handleLogout}
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
-              </Button>
             </div>
           </div>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-x-hidden p-4 md:p-6 md:ml-64">{children}</main>
+        <main className="flex-1 overflow-x-hidden p-4 md:p-6 md:ml-64">
+          <DashboardPage />
+        </main>
       </div>
     </div>
   )
