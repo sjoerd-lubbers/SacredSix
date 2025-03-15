@@ -39,6 +39,7 @@ export function TaskSortingControls({
             <SelectItem value="dueDate">Due Date</SelectItem>
             <SelectItem value="status">Status</SelectItem>
             <SelectItem value="name">Name</SelectItem>
+            <SelectItem value="updatedAt">Last Changed</SelectItem>
           </SelectContent>
         </Select>
       </div>

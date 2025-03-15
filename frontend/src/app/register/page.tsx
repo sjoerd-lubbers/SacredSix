@@ -65,8 +65,8 @@ export default function RegisterPage() {
         description: "Welcome to Sacred Six Productivity!",
       })
       
-      // Redirect to dashboard
-      router.push("/dashboard")
+      // Redirect to onboarding for new users
+      router.push("/onboarding")
     } catch (error: any) {
       toast({
         variant: "destructive",

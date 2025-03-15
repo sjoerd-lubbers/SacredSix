@@ -17,6 +17,7 @@ const projectSharingRoutes = require('./routes/projectSharing');
 const apiKeyRoutes = require('./routes/apiKeys');
 const dailyCompletionRoutes = require('./routes/dailyCompletion');
 const dataExportRoutes = require('./routes/dataExport');
+const adminRoutes = require('./routes/admin');
 
 // Import utilities
 const { initSchedulers } = require('./utils/scheduler');
@@ -44,6 +45,7 @@ app.use('/api/project-sharing', projectSharingRoutes);
 app.use('/api/api-keys', apiKeyRoutes);
 app.use('/api/daily-completion', dailyCompletionRoutes);
 app.use('/api/data-export', dataExportRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Root route
 app.get('/', (req, res) => {

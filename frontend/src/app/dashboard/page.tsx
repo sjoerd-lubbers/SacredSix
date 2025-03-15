@@ -25,6 +25,7 @@ interface Project {
   name: string
   taskCount?: number
   isArchived?: boolean
+  tags?: string[]
 }
 
 interface SparklineData {
@@ -192,28 +193,35 @@ export default function DashboardPage() {
 
       {/* Removed Task Status and Recent Tasks sections as requested */}
 
-      {/* Projects */}
+      {/* Sacred Six Projects */}
       <div className="rounded-lg border bg-card p-4 shadow-sm">
         <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-medium">Projects</h3>
+          <h3 className="font-medium">Sacred Six</h3>
           <Button variant="outline" size="sm" asChild>
-            <a href="/dashboard/projects">View All</a>
+            <a href="/dashboard/sacred-six">View All</a>
           </Button>
         </div>
         {projects.length > 0 ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {projects.slice(0, 3).map((project) => (
-              <div key={project._id} className="rounded-md border p-4">
-                <h4 className="font-medium">{project.name}</h4>
-                <p className="mt-1 text-sm text-muted-foreground">{project.taskCount || 0} tasks</p>
-                <Button variant="ghost" size="sm" className="mt-2" asChild>
-                  <a href={`/dashboard/projects/${project._id}`}>View Project</a>
-                </Button>
-              </div>
-            ))}
+            {projects
+              .filter(project => 
+                project.tags && project.tags.some(tag => 
+                  tag.toLowerCase().includes('sacred') && tag.toLowerCase().includes('six')
+                )
+              )
+              .slice(0, 6)
+              .map((project) => (
+                <div key={project._id} className="rounded-md border p-4">
+                  <h4 className="font-medium">{project.name}</h4>
+                  <p className="mt-1 text-sm text-muted-foreground">{project.taskCount || 0} tasks</p>
+                  <Button variant="ghost" size="sm" className="mt-2" asChild>
+                    <a href={`/dashboard/projects/${project._id}`}>View Project</a>
+                  </Button>
+                </div>
+              ))}
           </div>
         ) : (
-          <p className="text-center text-muted-foreground">No projects yet</p>
+          <p className="text-center text-muted-foreground">No Sacred Six projects yet</p>
         )}
       </div>
     </div>
