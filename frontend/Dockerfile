@@ -16,10 +16,9 @@ COPY . .
 # Create public directory if it doesn't exist
 RUN mkdir -p ./public
 
-
 # Set environment variables (at build time)
 ARG NEXT_PUBLIC_API_URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_API_URL=https://sacred6-api.ams8.nl
 
 # Set environment variables
 ENV NODE_ENV=production
@@ -31,9 +30,6 @@ RUN npm run build
 # Expose port
 EXPOSE 3000
 ENV PORT=3000
-
-# Environment variables for API URL
-ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 
 # Start the server
 CMD ["npm", "start"]
