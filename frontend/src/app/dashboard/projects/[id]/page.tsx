@@ -27,6 +27,7 @@ import { AiTaskSuggestions } from "@/components/AiTaskSuggestions"
 import ProjectSharingModal from "@/components/ProjectSharingModal"
 import { TaskItem } from "@/components/TaskItem"
 import { TaskForm } from "@/components/TaskForm"
+import { apiEndpoint } from "@/config";
 
 interface Project {
   _id: string
@@ -182,14 +183,14 @@ export default function ProjectTasksPage() {
       }
 
       // Fetch project details
-      const projectResponse = await axios.get(`http://localhost:5000/api/projects/${params.id}`, config)
+      const projectResponse = await axios.get(apiEndpoint(`projects/${params.id}`), config)
       setProject(projectResponse.data)
 
       // Add a small delay to ensure project data is fully processed
       await new Promise(resolve => setTimeout(resolve, 50))
 
       // Fetch tasks for this project
-      const tasksResponse = await axios.get(`http://localhost:5000/api/tasks/project/${params.id}`, config)
+      const tasksResponse = await axios.get(apiEndpoint(`tasks/project/${params.id}`), config)
       setTasks(tasksResponse.data)
     } catch (error) {
       console.error("Error fetching project data:", error)
@@ -227,7 +228,7 @@ export default function ProjectTasksPage() {
         recurringDays: data.recurringDays,
       }
 
-      const response = await axios.post("http://localhost:5000/api/tasks", taskData, config)
+      const response = await axios.post(apiEndpoint("tasks"), taskData, config)
 
       setTasks(prev => [...prev, response.data])
       
@@ -283,7 +284,7 @@ export default function ProjectTasksPage() {
         recurringDays: data.recurringDays,
       }
 
-      const response = await axios.put(`http://localhost:5000/api/tasks/${editingTask._id}`, taskData, config)
+      const response = await axios.put(apiEndpoint(`tasks/${editingTask._id}`), taskData, config)
 
       setTasks(prev => 
         prev.map(task => 
@@ -319,7 +320,7 @@ export default function ProjectTasksPage() {
         headers: { Authorization: `Bearer ${token}` }
       }
 
-      await axios.delete(`http://localhost:5000/api/tasks/${taskId}`, config)
+      await axios.delete(apiEndpoint(`tasks/${taskId}`), config)
 
       setTasks(prev => prev.filter(task => task._id !== taskId))
 
@@ -349,7 +350,7 @@ export default function ProjectTasksPage() {
       const task = tasks.find(t => t._id === taskId)
       if (!task) return
 
-      const response = await axios.put(`http://localhost:5000/api/tasks/${taskId}`, {
+      const response = await axios.put(apiEndpoint(`tasks/${taskId}`), {
         ...task,
         status: newStatus
       }, config)

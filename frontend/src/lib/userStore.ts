@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
+import { apiEndpoint } from "@/config";
 
 // Define types
 export interface User {
@@ -35,7 +36,7 @@ export const useUserStore = create<UserState>((set) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', {
+      const response = await axios.post(apiEndpoint("auth/login"), {
         email,
         password
       });
@@ -65,7 +66,7 @@ export const useUserStore = create<UserState>((set) => ({
   register: async (name, email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', {
+      const response = await axios.post(apiEndpoint("auth/register"), {
         name,
         email,
         password
@@ -117,7 +118,7 @@ export const useUserStore = create<UserState>((set) => ({
         headers: { Authorization: `Bearer ${token}` }
       };
       
-      const response = await axios.get('http://localhost:5000/api/auth/user', config);
+      const response = await axios.get(apiEndpoint("auth/user"), config);
       
       set({
         user: response.data,
@@ -156,7 +157,7 @@ export const useUserStore = create<UserState>((set) => ({
       };
       
       const response = await axios.put(
-        'http://localhost:5000/api/auth/sacred-six',
+        apiEndpoint("auth/sacred-six"),
         data,
         config
       );

@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
+import { apiEndpoint } from "@/config";
 
 // Define types
 export interface ApiKey {
@@ -43,7 +44,7 @@ export const useApiKeyStore = create<ApiKeyState>((set) => ({
         headers: { Authorization: `Bearer ${token}` }
       };
 
-      const response = await axios.get("http://localhost:5000/api/api-keys", config);
+      const response = await axios.get(apiEndpoint("api-keys"), config);
       
       // Transform the data to extract project name from populated projectId
       const transformedApiKeys = response.data.map((apiKey: any) => {
@@ -84,7 +85,7 @@ export const useApiKeyStore = create<ApiKeyState>((set) => ({
       let resolvedProjectName = projectName || "";
       if (!resolvedProjectName) {
         try {
-          const projectResponse = await axios.get(`http://localhost:5000/api/projects/${projectId}`, config);
+          const projectResponse = await axios.get(apiEndpoint(`projects/${projectId}`), config);
           resolvedProjectName = projectResponse.data.name;
         } catch (error) {
           console.error("Error fetching project name:", error);
@@ -93,7 +94,7 @@ export const useApiKeyStore = create<ApiKeyState>((set) => ({
       }
 
       const response = await axios.post(
-        "http://localhost:5000/api/api-keys", 
+        apiEndpoint("api-keys"), 
         { name, projectId }, 
         config
       );
@@ -124,7 +125,7 @@ export const useApiKeyStore = create<ApiKeyState>((set) => ({
         headers: { Authorization: `Bearer ${token}` }
       };
 
-      await axios.put(`http://localhost:5000/api/api-keys/${apiKeyId}/deactivate`, {}, config);
+      await axios.put(apiEndpoint(`api-keys/${apiKeyId}/deactivate`), {}, config);
       
       // Update the API key in the store
       set(state => ({
@@ -149,7 +150,7 @@ export const useApiKeyStore = create<ApiKeyState>((set) => ({
         headers: { Authorization: `Bearer ${token}` }
       };
 
-      await axios.delete(`http://localhost:5000/api/api-keys/${apiKeyId}`, config);
+      await axios.delete(apiEndpoint(`api-keys/${apiKeyId}`), config);
       
       // Remove the API key from the store
       set(state => ({

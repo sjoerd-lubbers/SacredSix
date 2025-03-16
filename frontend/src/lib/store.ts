@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import axios from 'axios';
+import { apiEndpoint } from "@/config";
 
 // Define types
 export interface Collaborator {
@@ -59,13 +60,13 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       };
 
       // Fetch active projects
-      const activeResponse = await axios.get("http://localhost:5000/api/projects", config);
+      const activeResponse = await axios.get(apiEndpoint("projects"), config);
       const activeProjects = activeResponse.data;
       
       // Fetch archived projects if needed
       let archivedProjects: Project[] = [];
       if (showArchived) {
-        const archivedResponse = await axios.get("http://localhost:5000/api/projects/archived", config);
+        const archivedResponse = await axios.get(apiEndpoint("projects/archived"), config);
         archivedProjects = archivedResponse.data;
       }
       
@@ -95,7 +96,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       };
 
       const response = await axios.put(
-        `http://localhost:5000/api/projects/${projectId}`, 
+        apiEndpoint(`projects/${projectId}`), 
         projectData, 
         config
       );
@@ -132,7 +133,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       };
 
       const response = await axios.post(
-        "http://localhost:5000/api/projects", 
+        apiEndpoint("projects"), 
         projectData, 
         config
       );
@@ -161,7 +162,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         headers: { Authorization: `Bearer ${token}` }
       };
 
-      await axios.delete(`http://localhost:5000/api/projects/${projectId}`, config);
+      await axios.delete(apiEndpoint(`projects/${projectId}`), config);
       
       // Remove the project from the store
       set(state => ({
@@ -187,7 +188,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       };
       
       await axios.put(
-        `http://localhost:5000/api/projects/${projectId}/archive`,
+        apiEndpoint(`projects/${projectId}/archive`),
         { isArchived: archive },
         config
       );
@@ -236,7 +237,7 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
       };
       
       await axios.put(
-        "http://localhost:5000/api/projects/reorder",
+        apiEndpoint("projects/reorder"),
         { projectIds },
         config
       );

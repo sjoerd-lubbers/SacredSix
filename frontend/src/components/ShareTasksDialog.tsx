@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Share } from "lucide-react";
+import { apiEndpoint } from "@/config";
 
 interface ShareTasksDialogProps {
   taskIds: string[];
@@ -68,7 +69,7 @@ export default function ShareTasksDialog({
       };
 
       const response = await axios.post(
-        "http://localhost:5000/api/sharing/share",
+        apiEndpoint("sharing/share"),
         {
           taskIds,
           recipientEmail,

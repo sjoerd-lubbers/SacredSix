@@ -16,7 +16,7 @@ export default function Home() {
                 Voel jij je ook overweldigd door eindeloze takenlijsten? Sacred Six is de productiviteitsmethode die je helpt om weer controle te krijgen over je tijd en energie.
               </p>
               <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-                <Button asChild size="lg"  variant={"primary"} >
+                <Button asChild size="lg" variant="default">
                   <Link href="/register">Start Nu Gratis</Link>
                 </Button>
                 <Button asChild size="lg" variant={"secondary"}>
@@ -187,7 +187,7 @@ export default function Home() {
             <Button asChild size="lg" variant="secondary">
               <Link href="/register">Start Gratis Proefperiode</Link>
             </Button>
-            <Button asChild size="lg" variant="primary">
+            <Button asChild size="lg" variant="default">
               <Link href="/about">Ontdek Meer</Link>
             </Button>
           </div>

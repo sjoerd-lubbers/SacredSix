@@ -14,6 +14,7 @@ import { ReflectionCard } from "./reflection/ReflectionCard"
 import { ReflectionDetailDialog } from "./reflection/ReflectionDetailDialog"
 import { ReflectionEditDialog } from "./reflection/ReflectionEditDialog"
 import { NewReflectionDialog } from "./reflection/NewReflectionDialog"
+import { apiEndpoint } from "@/config";
 
 interface Reflection {
   _id: string
@@ -77,7 +78,7 @@ export default function ReflectionsTab() {
         headers: { Authorization: `Bearer ${token}` }
       }
 
-      const response = await axios.get("http://localhost:5000/api/reflections", config)
+      const response = await axios.get(apiEndpoint("reflections"), config)
       setReflections(response.data)
     } catch (error) {
       console.error("Error fetching reflections:", error)
@@ -104,7 +105,7 @@ export default function ReflectionsTab() {
       console.log("Creating reflection with data:", data);
 
       const response = await axios.post(
-        "http://localhost:5000/api/reflections", 
+        apiEndpoint("reflections"), 
         data, 
         config
       )
@@ -154,7 +155,7 @@ export default function ReflectionsTab() {
       console.log("Sending update data to server:", updateData);
 
       const response = await axios.put(
-        `http://localhost:5000/api/reflections/${editingReflection._id}`, 
+        apiEndpoint(`reflections/${editingReflection._id}`), 
         updateData, 
         config
       )
@@ -201,7 +202,7 @@ export default function ReflectionsTab() {
         headers: { Authorization: `Bearer ${token}` }
       }
 
-      await axios.delete(`http://localhost:5000/api/reflections/${reflectionId}`, config)
+      await axios.delete(apiEndpoint(`reflections/${reflectionId}`), config)
 
       setReflections(prev => prev.filter(reflection => reflection._id !== reflectionId))
 
@@ -237,7 +238,7 @@ export default function ReflectionsTab() {
       console.log("Sending reflection for analysis:", requestData);
 
       const response = await axios.post(
-        "http://localhost:5000/api/ai/analyze-reflection", 
+        apiEndpoint("ai/analyze-reflection"), 
         requestData, 
         config
       )

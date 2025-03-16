@@ -11,6 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Switch } from "@/components/ui/switch"
+import { apiEndpoint } from "@/config"
 import {
   Dialog,
   DialogContent,
@@ -139,7 +140,7 @@ export default function TodayPage() {
 
       // First, fetch all projects directly from the API
       // This ensures we have the most up-to-date project data
-      const projectsResponse = await axios.get("http://localhost:5000/api/projects", config)
+      const projectsResponse = await axios.get(apiEndpoint("projects"), config)
       const allProjects = projectsResponse.data
       
       console.log('Projects fetched directly from API:', allProjects.length)
@@ -149,7 +150,7 @@ export default function TodayPage() {
       setProjects(allProjects)
       
       // Fetch all tasks
-      const allTasksResponse = await axios.get("http://localhost:5000/api/tasks", config)
+      const allTasksResponse = await axios.get(apiEndpoint("tasks"), config)
       
       // Create a map of project IDs to project names for quick lookup
       const projectMap = new Map<string, string>()
@@ -205,7 +206,7 @@ export default function TodayPage() {
       setEligibleTasks(eligibleTasks)
       
       // Fetch today's tasks
-      const todayTasksResponse = await axios.get("http://localhost:5000/api/tasks/today", config)
+      const todayTasksResponse = await axios.get(apiEndpoint("tasks/today"), config)
       
       // Add project names to today's tasks using the project map
       const todayTasksWithProjects = todayTasksResponse.data.map((task: Task) => ({
@@ -242,7 +243,7 @@ export default function TodayPage() {
       const task = todayTasks.find(t => t._id === taskId)
       if (!task) return
 
-      await axios.put(`http://localhost:5000/api/tasks/${taskId}`, {
+      await axios.put(apiEndpoint(`tasks/${taskId}`), {
         ...task,
         status: newStatus
       }, config)
@@ -291,7 +292,7 @@ export default function TodayPage() {
       const recurringDays = selectedDays.length > 0 ? selectedDays : 
                            (isRecurring ? ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'] : [])
 
-      await axios.put(`http://localhost:5000/api/tasks/${taskId}`, {
+      await axios.put(apiEndpoint(`tasks/${taskId}`), {
         ...task,
         name: task.name,
         isRecurring,
@@ -350,7 +351,7 @@ export default function TodayPage() {
       }
 
       const response = await axios.post(
-        "http://localhost:5000/api/ai/recommend-tasks", 
+        apiEndpoint("ai/recommend-tasks"), 
         {}, 
         config
       )
@@ -428,13 +429,13 @@ export default function TodayPage() {
       
       // Update the selected tasks on the server
       await axios.put(
-        "http://localhost:5000/api/tasks/today/select",
+        apiEndpoint("tasks/today/select"),
         { taskIds: selectedTaskIds },
         config
       )
 
       // Fetch the updated today's tasks
-      const todayTasksResponse = await axios.get("http://localhost:5000/api/tasks/today", config)
+      const todayTasksResponse = await axios.get(apiEndpoint("tasks/today"), config)
       
       // Add project names to today's tasks - use storeProjects directly
       const todayTasksWithProjects = todayTasksResponse.data.map((task: Task) => ({

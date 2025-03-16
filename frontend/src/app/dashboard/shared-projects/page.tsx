@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { apiEndpoint } from "@/config";
 
 interface SharedProject {
   _id: string
@@ -80,14 +81,14 @@ export default function SharedProjectsPage() {
 
       // Fetch projects shared with me
       const sharedWithMeResponse = await axios.get(
-        "http://localhost:5000/api/project-sharing/shared-with-me", 
+        apiEndpoint("project-sharing/shared-with-me"), 
         config
       )
       setSharedWithMe(sharedWithMeResponse.data)
 
       // Fetch projects shared by me
       const sharedByMeResponse = await axios.get(
-        "http://localhost:5000/api/project-sharing/shared-by-me", 
+        apiEndpoint("project-sharing/shared-by-me"), 
         config
       )
       setSharedByMe(sharedByMeResponse.data)
@@ -114,7 +115,7 @@ export default function SharedProjectsPage() {
       }
 
       const response = await axios.put(
-        `http://localhost:5000/api/project-sharing/accept/${sharedProjectId}`,
+        apiEndpoint(`project-sharing/accept/${sharedProjectId}`),
         {},
         config
       )
@@ -160,7 +161,7 @@ export default function SharedProjectsPage() {
       }
 
       await axios.put(
-        `http://localhost:5000/api/project-sharing/reject/${sharedProjectId}`,
+        apiEndpoint(`project-sharing/reject/${sharedProjectId}`),
         {},
         config
       )

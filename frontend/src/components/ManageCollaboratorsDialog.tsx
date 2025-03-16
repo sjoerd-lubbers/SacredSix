@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { UserPlus, X, Shield, Edit, Eye, Trash2 } from "lucide-react"
+import { apiEndpoint } from "@/config"
 
 import { Button } from "@/components/ui/button"
 import { Avatar } from "@/components/ui/avatar"
@@ -104,7 +105,7 @@ export default function ManageCollaboratorsDialog({
         headers: { Authorization: `Bearer ${token}` }
       }
 
-      await axios.delete(`http://localhost:5000/api/projects/${projectId}/collaborators/${userId}`, config)
+      await axios.delete(apiEndpoint(`projects/${projectId}/collaborators/${userId}`), config)
 
       toast({
         title: "Collaborator removed",

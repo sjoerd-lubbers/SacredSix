@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
+import { apiEndpoint } from "@/config";
 
 const registerSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
@@ -50,7 +51,7 @@ export default function RegisterPage() {
   async function onSubmit(data: RegisterFormValues) {
     setIsLoading(true)
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/register", {
+      const response = await axios.post(apiEndpoint("auth/register"), {
         name: data.name,
         email: data.email,
         password: data.password,

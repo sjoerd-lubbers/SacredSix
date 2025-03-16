@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { OnboardingFlow } from "@/components/OnboardingFlow"
 import { DashboardBackground } from "@/components/DashboardBackground"
+import { apiEndpoint } from "@/config";
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -29,7 +30,7 @@ export default function OnboardingPage() {
           parsedUser.values?.length > 0) {
         // We'll check for projects separately to avoid blocking the onboarding flow
         // if they have mission and values but no projects yet
-        fetch("http://localhost:5000/api/projects", {
+        fetch(apiEndpoint("projects"), {
           headers: {
             Authorization: `Bearer ${token}`
           }
