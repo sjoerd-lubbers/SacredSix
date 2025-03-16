@@ -6,8 +6,11 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
 
-# Copy application files
+# Copy application files, including `public`
 COPY . .
+
+# Ensure `public/` exists (prevents COPY errors)
+RUN mkdir -p /app/public
 
 # Build the Next.js application in standalone mode
 RUN npm run build
@@ -22,11 +25,12 @@ RUN addgroup --system --gid 1001 nextjs && \
     chown -R nextjs:nextjs /app
 
 # Copy necessary files from the builder stage
-COPY --from=builder /app/.next/standalone ./  # Fixing reference
+COPY --from=builder /app/.next/standalone ./  # Ensure standalone exists
 COPY --from=builder /app/.next/static ./.next/static
 
-# Only copy `public/` if it exists
-COPY --from=builder /app/public ./public || echo "No public directory found"
+# Copy `public/` only if it exists
+RUN test -d /app/public || mkdir /app/public
+COPY --from=builder /app/public ./public
 
 USER nextjs
 EXPOSE 3000
