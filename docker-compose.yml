@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   backend:
-    image: registry.ams8.nl/sacred6-backend:v0.1.3
+    build: ./backend
     restart: always
     ports:
       - "5000:5000"
@@ -12,20 +12,25 @@ services:
       - NODE_ENV=production
       - PORT=5000
       - MONGO_URI=mongodb://mongodb:27017/sacred6
-      - FRONTEND_URL=https://sacred6.ams8.nl
+      # For local development
+      - FRONTEND_URL=http://localhost:3000
+      # For production deployment (uncomment when deploying)
+      # - FRONTEND_URL=https://sacred6.ams8.nl
     networks:
       - app-network
 
   frontend:
-    image: registry.ams8.nl/sacred6-frontend:v0.1.3
-    container_name: frontend
+    build: ./frontend
     restart: always
     ports:
-      - "80:3000"
+      - "3000:3000"
     depends_on:
       - backend
     environment:
-      - NEXT_PUBLIC_API_URL=https://api-sacred6.ams8.nl
+      # For local development
+      - NEXT_PUBLIC_API_URL=http://localhost:5000
+      # For production deployment (uncomment when deploying)
+      # - NEXT_PUBLIC_API_URL=https://api-sacred6.ams8.nl
     networks:
       - app-network
 

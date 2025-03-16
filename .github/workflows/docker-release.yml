@@ -28,10 +28,10 @@ jobs:
         docker tag ${{ secrets.REGISTRY_URL }}/sacred6-backend:${{ github.ref_name || 'manual' }} ${{ secrets.REGISTRY_URL }}/sacred6s-backend:latest
 
     # Stap 4: Push de Docker-image voor de backend
-    - name: Push Backend Docker Image
-      run: |
-        docker push ${{ secrets.REGISTRY_URL }}/sacred6-backend:${{ github.ref_name || 'manual' }}
-        docker push ${{ secrets.REGISTRY_URL }}/sacred6-backend:latest
+    # - name: Push Backend Docker Image
+    #   run: |
+    #     docker push ${{ secrets.REGISTRY_URL }}/sacred6-backend:${{ github.ref_name || 'manual' }}
+    #     docker push ${{ secrets.REGISTRY_URL }}/sacred6-backend:latest
 
   frontend:
     name: Build and Push Frontend Image
@@ -54,7 +54,7 @@ jobs:
         docker tag ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }} ${{ secrets.REGISTRY_URL }}/sacred6-frontend:latest
 
     # Stap 4: Push de Docker-image voor de frontend
-    - name: Push Frontend Docker Image
-      run: |
-        docker push ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }}
-        docker push ${{ secrets.REGISTRY_URL }}/sacred6-frontend:latest
+    # - name: Push Frontend Docker Image
+    #   run: |
+    #     docker push ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }}
+    #     docker push ${{ secrets.REGISTRY_URL }}/sacred6-frontend:latest
