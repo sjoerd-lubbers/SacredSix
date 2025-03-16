@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { Share, Users } from "lucide-react";
+import { apiEndpoint } from "@/config";
 import {
   Select,
   SelectContent,
@@ -79,7 +80,7 @@ export default function ShareProjectDialog({
 
       // Add collaborator directly to the project
       const response = await axios.put(
-        `http://localhost:5000/api/projects/${projectId}/collaborators`,
+        apiEndpoint(`projects/${projectId}/collaborators`),
         {
           email: recipientEmail,
           role
@@ -89,7 +90,7 @@ export default function ShareProjectDialog({
 
       // Also send an email notification
       await axios.post(
-        "http://localhost:5000/api/project-sharing/share",
+        apiEndpoint("project-sharing/share"),
         {
           projectId,
           recipientEmail,

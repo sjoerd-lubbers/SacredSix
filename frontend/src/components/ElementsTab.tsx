@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { apiEndpoint } from "@/config";
 
 const sacredSixFormSchema = z.object({
   mission: z.string().min(10, {
@@ -84,7 +85,7 @@ export default function ElementsTab() {
 
       // Call the API to update Sacred Six
       const response = await axios.put(
-        "http://localhost:5000/api/auth/sacred-six",
+        apiEndpoint("auth/sacred-six"),
         data,
         config
       )

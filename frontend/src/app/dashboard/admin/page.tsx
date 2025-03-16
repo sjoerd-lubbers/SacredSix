@@ -23,6 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
+import { apiEndpoint } from "@/config"
 import {
   Table,
   TableBody,
@@ -97,7 +98,7 @@ export default function AdminPage() {
     setIsLoading(true)
     try {
       const token = localStorage.getItem("token")
-      const response = await axios.get("http://localhost:5000/api/admin/users", {
+      const response = await axios.get(apiEndpoint("admin/users"), {
         headers: { Authorization: `Bearer ${token}` }
       })
       setUsers(response.data)
@@ -117,7 +118,7 @@ export default function AdminPage() {
   const fetchUserStats = async () => {
     try {
       const token = localStorage.getItem("token")
-      const response = await axios.get("http://localhost:5000/api/admin/users/count", {
+      const response = await axios.get(apiEndpoint("admin/users/count"), {
         headers: { Authorization: `Bearer ${token}` }
       })
       setUserStats(response.data)
@@ -130,7 +131,7 @@ export default function AdminPage() {
     setIsStatsLoading(true)
     try {
       const token = localStorage.getItem("token")
-      const response = await axios.get("http://localhost:5000/api/admin/stats", {
+      const response = await axios.get(apiEndpoint("admin/stats"), {
         headers: { Authorization: `Bearer ${token}` }
       })
       setSystemStats(response.data)
@@ -150,7 +151,7 @@ export default function AdminPage() {
     setIsActivityLoading(true)
     try {
       const token = localStorage.getItem("token")
-      const response = await axios.get("http://localhost:5000/api/admin/activity", {
+      const response = await axios.get(apiEndpoint("admin/activity"), {
         headers: { Authorization: `Bearer ${token}` }
       })
       setActivities(response.data)
@@ -188,7 +189,7 @@ export default function AdminPage() {
       const newRole = currentRole === "admin" ? "user" : "admin"
       
       await axios.put(
-        `http://localhost:5000/api/admin/users/${userId}/role`,
+        apiEndpoint(`admin/users/${userId}/role`),
         { role: newRole },
         { headers: { Authorization: `Bearer ${token}` } }
       )

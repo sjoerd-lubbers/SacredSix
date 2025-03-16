@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { CompletionRateCard } from "@/components/CompletionRateCard"
 import { Sparkline } from "@/components/Sparkline"
+import { apiEndpoint } from "@/config";
 
 interface Task {
   _id: string
@@ -63,11 +64,11 @@ export default function DashboardPage() {
         }
 
         // Fetch tasks
-        const tasksResponse = await axios.get("http://localhost:5000/api/tasks", config)
+        const tasksResponse = await axios.get(apiEndpoint("tasks"), config)
         setTasks(tasksResponse.data)
 
         // Fetch projects
-        const projectsResponse = await axios.get("http://localhost:5000/api/projects", config)
+        const projectsResponse = await axios.get(apiEndpoint("projects"), config)
         
         // Count tasks per project
         const projectsWithTaskCount = projectsResponse.data.filter(
@@ -100,7 +101,7 @@ export default function DashboardPage() {
         })
         
         // Fetch sparkline data
-        const sparklineResponse = await axios.get("http://localhost:5000/api/tasks/stats/sparkline", config)
+        const sparklineResponse = await axios.get(apiEndpoint("tasks/stats/sparkline"), config)
         setSparklineData(sparklineResponse.data)
       } catch (error) {
         console.error("Error fetching data:", error)

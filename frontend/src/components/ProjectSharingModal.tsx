@@ -49,6 +49,7 @@ import {
 } from "@/components/ui/select"
 import { useToast } from "@/components/ui/use-toast"
 import { Badge } from "@/components/ui/badge"
+import { apiEndpoint } from "@/config"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -147,7 +148,7 @@ export default function ProjectSharingModal({
 
       // Send the sharing invitation
       await axios.post(
-        "http://localhost:5000/api/project-sharing/share",
+        apiEndpoint("project-sharing/share"),
         {
           projectId,
           recipientEmail,
@@ -191,7 +192,7 @@ export default function ProjectSharingModal({
         headers: { Authorization: `Bearer ${token}` }
       }
 
-      await axios.delete(`http://localhost:5000/api/projects/${projectId}/collaborators/${userId}`, config)
+      await axios.delete(apiEndpoint(`projects/${projectId}/collaborators/${userId}`), config)
 
       toast({
         title: "Collaborator removed",
@@ -227,7 +228,7 @@ export default function ProjectSharingModal({
 
       // Update the collaborator's role
       await axios.put(
-        `http://localhost:5000/api/projects/${projectId}/collaborators`,
+        apiEndpoint(`projects/${projectId}/collaborators`),
         {
           email: collaborator.userId.email,
           role: newRole

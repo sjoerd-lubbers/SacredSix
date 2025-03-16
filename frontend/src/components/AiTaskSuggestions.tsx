@@ -3,6 +3,7 @@
 import { useState } from "react"
 import axios from "axios"
 import { Sparkles } from "lucide-react"
+import { apiEndpoint } from "@/config"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -65,7 +66,7 @@ export function AiTaskSuggestions({
       const description = (document.getElementById("ai-description") as HTMLTextAreaElement)?.value || projectDescription
       
       const response = await axios.post(
-        "http://localhost:5000/api/ai/suggest-tasks", 
+        apiEndpoint("ai/suggest-tasks"), 
         {
           title: projectName,
           description,

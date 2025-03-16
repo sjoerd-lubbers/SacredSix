@@ -1,0 +1,60 @@
+name: Build and Push Docker Images
+
+on:
+  release:
+    types:
+      - published # Automatisch triggeren bij een release
+  workflow_dispatch: # Handmatige trigger
+
+jobs:
+  backend:
+    name: Build and Push Backend Image
+    runs-on: ubuntu-latest
+
+    steps:
+    # Stap 1: Haal de repository op
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Stap 2: Log in bij de container registry
+    - name: Log in to Container Registry
+      run: echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ secrets.REGISTRY_URL }} -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+    # Stap 3: Bouw de Docker-image voor de backend
+    - name: Build Backend Docker Image
+      working-directory: ./backend
+      run: |
+        docker build -t ${{ secrets.REGISTRY_URL }}/sacred6-backend:${{ github.ref_name || 'manual' }} .
+        docker tag ${{ secrets.REGISTRY_URL }}/sacred6-backend:${{ github.ref_name || 'manual' }} ${{ secrets.REGISTRY_URL }}/todoei-backend:latest
+
+    # Stap 4: Push de Docker-image voor de backend
+    - name: Push Backend Docker Image
+      run: |
+        docker push ${{ secrets.REGISTRY_URL }}/sacred6-backend:${{ github.ref_name || 'manual' }}
+        docker push ${{ secrets.REGISTRY_URL }}/sacred6-backend:latest
+
+  frontend:
+    name: Build and Push Frontend Image
+    runs-on: ubuntu-latest
+
+    steps:
+    # Stap 1: Haal de repository op
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    # Stap 2: Log in bij de container registry
+    - name: Log in to Container Registry
+      run: echo "${{ secrets.REGISTRY_PASSWORD }}" | docker login ${{ secrets.REGISTRY_URL }} -u ${{ secrets.REGISTRY_USERNAME }} --password-stdin
+
+    # Stap 3: Bouw de Docker-image voor de frontend
+    - name: Build Frontend Docker Image
+      working-directory: ./frontend
+      run: |
+        docker build -t ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }} .
+        docker tag ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }} ${{ secrets.REGISTRY_URL }}/todoei-frontend:latest
+
+    # Stap 4: Push de Docker-image voor de frontend
+    - name: Push Frontend Docker Image
+      run: |
+        docker push ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }}
+        docker push ${{ secrets.REGISTRY_URL }}/sacred6-frontend:latest

@@ -19,6 +19,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@/components/ui/alert"
+import { apiEndpoint } from "@/config"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -56,7 +57,7 @@ export default function DataExportTab() {
         headers: { Authorization: `Bearer ${token}` }
       }
 
-      const response = await axios.get("http://localhost:5000/api/data-export", config)
+      const response = await axios.get(apiEndpoint("data-export"), config)
       
       // Convert the data to a JSON string
       const jsonData = JSON.stringify(response.data, null, 2)
@@ -190,7 +191,7 @@ export default function DataExportTab() {
           
           // Send the data to the server
           const response = await axios.post(
-            "http://localhost:5000/api/data-export/import", 
+            apiEndpoint("data-export/import"), 
             data, 
             config
           )

@@ -6,6 +6,7 @@ import { CheckCircle, Calendar, BarChart, Zap, Target, AlertTriangle } from "luc
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
 import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { apiEndpoint } from "@/config";
 
 interface CompletionStats {
   totalDays: number
@@ -36,10 +37,10 @@ export function CompletionRateCard() {
         }
 
         // First, update today's completion record
-        await axios.post("http://localhost:5000/api/daily-completion/update", {}, config)
+        await axios.post(apiEndpoint("daily-completion/update"), {}, config)
 
         // Then fetch the stats
-        const response = await axios.get("http://localhost:5000/api/daily-completion/stats", config)
+        const response = await axios.get(apiEndpoint("daily-completion/stats"), config)
         setStats(response.data)
       } catch (error) {
         console.error("Error fetching completion stats:", error)

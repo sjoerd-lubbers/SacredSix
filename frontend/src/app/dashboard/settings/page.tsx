@@ -31,6 +31,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { apiEndpoint } from "@/config";
 
 const profileFormSchema = z.object({
   name: z.string().min(2, {
@@ -101,7 +102,7 @@ export default function SettingsPage() {
       }
 
       // This endpoint is not implemented yet, but would be in a real app
-      // const response = await axios.put("http://localhost:5000/api/auth/profile", data, config)
+      // const response = await axios.put(apiEndpoint("auth/profile"), data, config)
       
       // For now, just update the local storage
       const updatedUser = { ...user, ...data }
@@ -135,7 +136,7 @@ export default function SettingsPage() {
       }
 
       // This endpoint is not implemented yet, but would be in a real app
-      // const response = await axios.put("http://localhost:5000/api/auth/notifications", data, config)
+      // const response = await axios.put(apiEndpoint("auth/notifications"), data, config)
       
       toast({
         title: "Notification preferences updated",

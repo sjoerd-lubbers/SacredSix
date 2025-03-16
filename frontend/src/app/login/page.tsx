@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/ui/use-toast"
+import { apiEndpoint } from "@/config";
 
 const loginSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -43,7 +44,7 @@ export default function LoginPage() {
   async function onSubmit(data: LoginFormValues) {
     setIsLoading(true)
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", data)
+      const response = await axios.post(apiEndpoint("auth/login"), data)
       
       // Store token in localStorage
       localStorage.setItem("token", response.data.token)
@@ -63,7 +64,7 @@ export default function LoginPage() {
       } else {
         // Check if user has any projects
         try {
-          const projectsResponse = await axios.get("http://localhost:5000/api/projects", {
+          const projectsResponse = await axios.get(apiEndpoint("projects"), {
             headers: { Authorization: `Bearer ${response.data.token}` }
           })
           

@@ -55,6 +55,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { apiEndpoint } from "@/config";
 
 const apiKeyFormSchema = z.object({
   name: z.string().min(2, {
@@ -501,7 +502,7 @@ export default function ApiKeysTab() {
             <div className="space-y-2">
               <h4 className="font-medium">Example:</h4>
               <pre className="bg-muted p-2 rounded-md text-xs overflow-x-auto">
-                {`fetch('http://localhost:5000/api/api-keys/today-tasks', {
+                {`fetch(apiEndpoint("api-keys/today-tasks"), {
   headers: {
     'X-API-Key': 'your-api-key-here'
   }

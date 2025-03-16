@@ -7,6 +7,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { apiEndpoint } from "@/config"
 import {
   Card,
   CardContent,
@@ -52,7 +53,7 @@ export function RecurringTasksSettings({
         headers: { Authorization: `Bearer ${token}` }
       }
 
-      await axios.put(`http://localhost:5000/api/projects/${projectId}/recurring-settings`, {
+      await axios.put(apiEndpoint(`projects/${projectId}/recurring-settings`), {
         defaultTasksRecurring: isRecurring,
         defaultRecurringDays: selectedDays
       }, config)

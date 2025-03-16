@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import axios from "axios"
 import { Target, Heart, Sparkles, ArrowRight, Check } from "lucide-react"
+import { apiEndpoint } from "@/config"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -65,7 +66,7 @@ export function OnboardingFlow() {
 
       // Call the API to update Sacred Six
       const response = await axios.put(
-        "http://localhost:5000/api/auth/sacred-six",
+        apiEndpoint("auth/sacred-six"),
         { mission, values },
         config
       )
@@ -120,7 +121,7 @@ export function OnboardingFlow() {
       
       // Create project
       await axios.post(
-        "http://localhost:5000/api/projects",
+        apiEndpoint("projects"),
         {
           name: projectName,
           description: projectDescription,
@@ -307,7 +308,7 @@ export function OnboardingFlow() {
               }
               
               await axios.post(
-                "http://localhost:5000/api/projects",
+                apiEndpoint("projects"),
                 data,
                 config
               )

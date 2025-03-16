@@ -11,6 +11,7 @@ export const metadata: Metadata = {
   description: 'AI-powered productivity app based on the Sacred Six methodology',
 }
 
+
 export default function RootLayout({
   children,
 }: {
