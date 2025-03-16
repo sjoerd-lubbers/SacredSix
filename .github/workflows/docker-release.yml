@@ -25,7 +25,7 @@ jobs:
       working-directory: ./backend
       run: |
         docker build -t ${{ secrets.REGISTRY_URL }}/sacred6-backend:${{ github.ref_name || 'manual' }} .
-        docker tag ${{ secrets.REGISTRY_URL }}/sacred6-backend:${{ github.ref_name || 'manual' }} ${{ secrets.REGISTRY_URL }}/todoei-backend:latest
+        docker tag ${{ secrets.REGISTRY_URL }}/sacred6-backend:${{ github.ref_name || 'manual' }} ${{ secrets.REGISTRY_URL }}/sacred6s-backend:latest
 
     # Stap 4: Push de Docker-image voor de backend
     - name: Push Backend Docker Image
@@ -51,7 +51,7 @@ jobs:
       working-directory: ./frontend
       run: |
         docker build -t ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }} .
-        docker tag ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }} ${{ secrets.REGISTRY_URL }}/todoei-frontend:latest
+        docker tag ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }} ${{ secrets.REGISTRY_URL }}/sacred6-frontend:latest
 
     # Stap 4: Push de Docker-image voor de frontend
     - name: Push Frontend Docker Image
