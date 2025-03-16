@@ -1,38 +1,62 @@
-# Stage 1: Build the Next.js application
-FROM node:18 AS builder
+# Stage 1: Dependencies
+FROM node:18-alpine AS deps
 WORKDIR /app
 
-# Copy package.json and install dependencies
+# Copy package files
 COPY package.json package-lock.json ./
-RUN npm install
+RUN npm ci
 
-# Copy application files, including `public`
+# Stage 2: Builder
+FROM node:18-alpine AS builder
+WORKDIR /app
+
+# Copy dependencies
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Ensure `public/` exists (prevents COPY errors)
-RUN mkdir -p /app/public
+# Create public directory if it doesn't exist
+RUN mkdir -p ./public
 
-# Build the Next.js application in standalone mode
+# Set environment variables for build
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV production
+
+# Build the application
 RUN npm run build
 
-# Stage 2: Create the final container
-FROM node:18
+# Stage 3: Runner
+FROM node:18-alpine AS runner
 WORKDIR /app
 
-# Create a non-root user
-RUN addgroup --system --gid 1001 nextjs && \
-    adduser --system --uid 1001 nextjs && \
-    chown -R nextjs:nextjs /app
+# Set environment variables
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
 
-# Copy necessary files from the builder stage
-COPY --from=builder /app/.next/standalone ./  # Ensure standalone exists
-COPY --from=builder /app/.next/static ./.next/static
+# Create non-root user
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# Copy `public/` only if it exists
-RUN test -d /app/public || mkdir /app/public
-COPY --from=builder /app/public ./public
+# Create .next directory with proper permissions
+RUN mkdir .next
+RUN chown nextjs:nodejs .next
 
+# Copy necessary files from builder
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Create public directory and copy contents
+RUN mkdir -p ./public
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Switch to non-root user
 USER nextjs
-EXPOSE 3000
 
+# Expose port
+EXPOSE 3000
+ENV PORT 3000
+
+# Environment variables for API URL
+ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+
+# Start the server
 CMD ["node", "server.js"]

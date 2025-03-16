@@ -11,8 +11,13 @@ const nextConfig = {
   images: {
     domains: [],
   },
+  // Output standalone build for Docker deployment
   output: 'standalone',
-
-}  
+  // Experimental features
+  experimental: {
+    // Enable app directory features
+    appDir: true,
+  }
+}
 
 module.exports = nextConfig
