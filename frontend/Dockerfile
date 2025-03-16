@@ -23,8 +23,10 @@ RUN addgroup --system --gid 1001 nextjs && \
 
 # Copy necessary files from the builder stage
 COPY --from=builder /app/.next/standalone ./  # Fixing reference
-COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/static ./.next/static
+
+# Only copy `public/` if it exists
+COPY --from=builder /app/public ./public || echo "No public directory found"
 
 USER nextjs
 EXPOSE 3000
