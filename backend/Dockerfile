@@ -15,7 +15,7 @@ EXPOSE 5000
 # Environment variables with defaults
 ENV PORT=5000
 ENV NODE_ENV=production
-ENV MONGO_URI=mongodb://mongodb:27017/sacred6
+ENV MONGODB_URI=mongodb://mongodb:27017/sacred6
 ENV FRONTEND_URL=http://frontend:3000
 
 # Start the application
