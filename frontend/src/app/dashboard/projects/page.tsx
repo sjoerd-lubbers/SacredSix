@@ -238,6 +238,7 @@ export default function ProjectsPage() {
           title: "Project created",
           description: "Your project has been created successfully.",
         })
+        setIsCreateDialogOpen(false);
       } else {
         toast({
           variant: "destructive",
@@ -282,6 +283,7 @@ export default function ProjectsPage() {
           description: "Your project has been updated successfully.",
         });
         setEditingProject(null);
+        setIsEditDialogOpen(false);
       } else {
         toast({
           variant: "destructive",
@@ -481,12 +483,20 @@ export default function ProjectsPage() {
                             >
                               <Archive className="h-4 w-4" />
                             </Button>
-                            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                            <Dialog onOpenChange={(open) => {
+                              if (open) {
+                                setEditingProject(project);
+                                // Count sacred projects excluding the currently edited project if it's sacred
+                                const count = activeProjects.filter(p => 
+                                  p.isSacred && p._id !== project._id
+                                ).length;
+                                setSacredProjectsCount(count);
+                              }
+                            }}>
                               <DialogTrigger asChild>
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  onClick={() => setEditingProject(project)}
                                 >
                                   <Pencil className="h-4 w-4" />
                                 </Button>
@@ -497,16 +507,16 @@ export default function ProjectsPage() {
                                 </DialogHeader>
                                 <ProjectForm
                                   defaultValues={{
-                                    name: editingProject?.name || "",
-                                    description: editingProject?.description || "",
-                                    tags: editingProject?.tags?.join(", ") || "",
-                                    isSacred: editingProject?.isSacred || false,
+                                    name: project.name,
+                                    description: project.description || "",
+                                    tags: project.tags?.join(", ") || "",
+                                    isSacred: project.isSacred || false,
                                   }}
                                   onSubmit={handleUpdateProject}
                                   isSubmitting={isSubmitting}
                                   submitLabel="Update Project"
                                   submittingLabel="Updating..."
-                                  disableSacredCheckbox={sacredProjectsCount >= 6 && !editingProject?.isSacred}
+                                  disableSacredCheckbox={sacredProjectsCount >= 6 && !project.isSacred}
                                   disabledSacredMessage="Maximum of 6 sacred projects reached"
                                 />
                               </DialogContent>

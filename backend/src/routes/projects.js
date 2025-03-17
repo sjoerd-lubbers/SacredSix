@@ -26,6 +26,21 @@ router.post(
     try {
       const { name, description, tags, isSacred } = req.body;
 
+      // If trying to create a sacred project, check if user already has 6 sacred projects
+      if (isSacred) {
+        const sacredProjectsCount = await Project.countDocuments({
+          ownerId: req.userId,
+          isSacred: true,
+          isArchived: false
+        });
+
+        if (sacredProjectsCount >= 6) {
+          return res.status(400).json({ 
+            message: 'Maximum of 6 sacred projects allowed. Please unmark an existing project as sacred first.' 
+          });
+        }
+      }
+
       // Get the highest sortOrder to place new project at the end
       const highestSortProject = await Project.findOne({ 
         $or: [
@@ -286,6 +301,21 @@ router.put(
         
         if (!userCollaborator) {
           return res.status(401).json({ message: 'Not authorized to update this project' });
+        }
+      }
+
+      // If trying to mark a project as sacred, check if user already has 6 sacred projects
+      if (isSacred && !project.isSacred) {
+        const sacredProjectsCount = await Project.countDocuments({
+          ownerId: req.userId,
+          isSacred: true,
+          isArchived: false
+        });
+
+        if (sacredProjectsCount >= 6) {
+          return res.status(400).json({ 
+            message: 'Maximum of 6 sacred projects allowed. Please unmark an existing project as sacred first.' 
+          });
         }
       }
 

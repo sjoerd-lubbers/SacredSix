@@ -174,7 +174,10 @@ export default function ProjectCard({
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => setEditingProject(project)}
+                onClick={() => {
+                  setEditingProject(project);
+                  setIsDialogOpen(true);
+                }}
               >
                 <Pencil className="h-4 w-4" />
               </Button>
@@ -194,7 +197,7 @@ export default function ProjectCard({
                 isSubmitting={isSubmitting}
                 submitLabel="Update Project"
                 submittingLabel="Updating..."
-                disableSacredCheckbox={sacredProjectsCount >= 6 && !project.isSacred}
+                disableSacredCheckbox={sacredProjectsCount >= 6}
                 disabledSacredMessage="Maximum of 6 sacred projects reached"
               />
             </DialogContent>
