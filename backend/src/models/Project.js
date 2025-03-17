@@ -38,6 +38,10 @@ const ProjectSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isSacred: {
+    type: Boolean,
+    default: false
+  },
   defaultTasksRecurring: {
     type: Boolean,
     default: false

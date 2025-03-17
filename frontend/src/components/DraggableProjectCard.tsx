@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Pencil, Trash2, Archive, GripVertical, Users, Share } from "lucide-react"
+import { Pencil, Trash2, Archive, GripVertical, Users, Share, Flame } from "lucide-react"
 import { Draggable } from "react-beautiful-dnd"
 import { Project } from "@/lib/store"
 import { User } from "@/lib/userStore"
@@ -58,6 +58,11 @@ export default function DraggableProjectCard({
 }: DraggableProjectCardProps) {
   const [editingProject, setEditingProject] = useState<Project | null>(null)
 
+  // Ensure project has all required properties
+  if (!project || !project._id) {
+    return null;
+  }
+
   const handleUpdate = async (data: ProjectFormValues) => {
     if (!editingProject) return
 
@@ -70,7 +75,8 @@ export default function DraggableProjectCard({
       {
         name: data.name,
         description: data.description,
-        tags: tagsArray
+        tags: tagsArray,
+        isSacred: data.isSacred
       }
     )
     
@@ -93,6 +99,12 @@ export default function DraggableProjectCard({
               <div>
                 <div className="flex items-center">
                   <h3 className="font-medium">{project.name}</h3>
+                  {project.isSacred && (
+                    <Badge variant="secondary" className="ml-2 flex items-center gap-1 bg-amber-100 text-amber-700" title="Sacred Project">
+                      <Flame className="h-3 w-3" />
+                      Sacred
+                    </Badge>
+                  )}
                   {project.collaborators && project.collaborators.length > 0 && (
                     <Badge variant="outline" className="ml-2 flex items-center gap-1" title="Shared with others">
                       <Users className="h-3 w-3" />
@@ -148,6 +160,7 @@ export default function DraggableProjectCard({
                       name: project.name,
                       description: project.description || "",
                       tags: project.tags.join(", "),
+                      isSacred: project.isSacred || false,
                     }}
                     onSubmit={handleUpdate}
                     isSubmitting={isSubmitting}

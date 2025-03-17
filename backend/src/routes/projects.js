@@ -24,7 +24,7 @@ router.post(
     }
 
     try {
-      const { name, description, tags } = req.body;
+      const { name, description, tags, isSacred } = req.body;
 
       // Get the highest sortOrder to place new project at the end
       const highestSortProject = await Project.findOne({ 
@@ -45,6 +45,7 @@ router.post(
         name,
         description,
         tags: tags || [],
+        isSacred: isSacred || false,
         sortOrder: nextSortOrder
       });
 
@@ -266,7 +267,7 @@ router.put(
     }
 
     try {
-      const { name, description, tags, isArchived, collaborators } = req.body;
+      const { name, description, tags, isArchived, isSacred, collaborators } = req.body;
 
       // Find project by ID
       let project = await Project.findById(req.params.id);
@@ -293,6 +294,7 @@ router.put(
       if (description !== undefined) project.description = description;
       if (tags !== undefined) project.tags = tags;
       if (isArchived !== undefined) project.isArchived = isArchived;
+      if (isSacred !== undefined) project.isSacred = isSacred;
       
       // Only the owner can update collaborators
       if (collaborators !== undefined && project.ownerId.toString() === req.userId.toString()) {
