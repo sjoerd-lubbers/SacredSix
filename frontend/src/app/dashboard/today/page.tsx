@@ -586,10 +586,22 @@ export default function TodayPage() {
       {isSelectionMode ? (
         <div className="rounded-lg border bg-card shadow-sm">
           <Tabs defaultValue="recommended" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="recommended">
                 AI Recommended
                 <Badge variant="outline" className="ml-2">{recommendedTasks.length}</Badge>
+              </TabsTrigger>
+              <TabsTrigger value="overdue">
+                Overdue Tasks
+                <Badge variant="outline" className="ml-2">
+                  {eligibleTasks.filter(task => {
+                    if (!task.dueDate) return false;
+                    const dueDate = new Date(task.dueDate);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0); // Set to beginning of day
+                    return dueDate < today; // Only if due date is before today (not including today)
+                  }).length}
+                </Badge>
               </TabsTrigger>
               <TabsTrigger value="eligible">
                 All Eligible Tasks
@@ -605,12 +617,11 @@ export default function TodayPage() {
                 <p className="text-sm text-muted-foreground">
                   Select up to 6 tasks for The Daily Sacred Six. {selectedTaskIds.length}/6 selected.
                 </p>
-
               </div>
               <div className="space-y-2">
                 {recommendedTasks.length > 0 ? (
                   recommendedTasks.map((task) => (
-                    <div key={task._id} className="flex items-start space-x-2 p-2 rounded-md hover:bg-accent">
+                    <div key={task._id} className={`flex items-start space-x-2 p-2 rounded-md hover:bg-accent ${task.dueDate && new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? "bg-red-50 dark:bg-red-900/20" : ""}`}>
                       <Checkbox 
                         id={`recommended-${task._id}`}
                         checked={selectedTaskIds.includes(task._id)}
@@ -624,7 +635,6 @@ export default function TodayPage() {
                         >
                           {task.name}
                           {task.status === "done" && <CheckCircle2 className="h-4 w-4 ml-2 text-green-500" />}
-                          {task.isRecurring && <Repeat className="h-4 w-4 ml-2 text-blue-500" />}
                         </label>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
                       <span className="text-xs text-muted-foreground">Project: {task.projectName}</span>
@@ -632,8 +642,9 @@ export default function TodayPage() {
                         Priority: {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                       </span>
                           {task.dueDate && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className={`text-xs ${new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? "text-red-600 dark:text-red-400 font-medium" : "text-muted-foreground"}`}>
                               Due: {new Date(task.dueDate).toLocaleDateString()}
+                              {new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) && " (Overdue)"}
                             </span>
                           )}
                           {task.isRecurring && (
@@ -652,11 +663,79 @@ export default function TodayPage() {
                 )}
               </div>
             </TabsContent>
+            <TabsContent value="overdue" className="p-4">
+              <div className="mb-4">
+                <h3 className="text-lg font-medium flex items-center">
+                  <AlertCircle className="h-5 w-5 mr-2 text-red-500" />
+                  Overdue Tasks
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Tasks with due dates in the past. These should be prioritized.
+                </p>
+              </div>
+              <div className="space-y-2">
+                {eligibleTasks.filter(task => {
+                  if (!task.dueDate) return false;
+                  const dueDate = new Date(task.dueDate);
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0); // Set to beginning of day
+                  return dueDate < today; // Only if due date is before today (not including today)
+                }).length > 0 ? (
+                  eligibleTasks
+                    .filter(task => {
+                      if (!task.dueDate) return false;
+                      const dueDate = new Date(task.dueDate);
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0); // Set to beginning of day
+                      return dueDate < today; // Only if due date is before today (not including today)
+                    })
+                    .map((task) => (
+                      <div key={task._id} className="flex items-start space-x-2 p-2 rounded-md hover:bg-accent bg-red-50 dark:bg-red-900/20">
+                        <Checkbox 
+                          id={`overdue-${task._id}`}
+                          checked={selectedTaskIds.includes(task._id)}
+                          onCheckedChange={() => handleTaskSelection(task._id)}
+                          className="mt-1"
+                        />
+                        <div className="flex-1">
+                          <label 
+                            htmlFor={`overdue-${task._id}`}
+                            className="font-medium cursor-pointer flex items-center"
+                          >
+                          {task.name}
+                          {task.status === "done" && <CheckCircle2 className="h-4 w-4 ml-2 text-green-500" />}
+                          </label>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className="text-xs text-muted-foreground">Project: {task.projectName}</span>
+                            <span className={`text-xs ${getPriorityColor(task.priority)}`}>
+                              Priority: {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                            </span>
+                            {task.dueDate && (
+                              <span className="text-xs text-red-600 dark:text-red-400 font-medium">
+                                Due: {new Date(task.dueDate).toLocaleDateString()} (Overdue)
+                              </span>
+                            )}
+                            {task.isRecurring && (
+                              <span className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 px-2 py-1 rounded-full">
+                                Recurring: {task.recurringDays?.map(day => day.slice(0, 3)).join(", ")}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                ) : (
+                  <p className="text-center text-muted-foreground py-4">
+                    No overdue tasks found. Great job staying on top of your deadlines!
+                  </p>
+                )}
+              </div>
+            </TabsContent>
             <TabsContent value="eligible" className="p-4">
               <div className="mb-4">
                 <h3 className="text-lg font-medium">All Eligible Tasks</h3>
                 <p className="text-sm text-muted-foreground">
-                  Tasks from projects tagged with "sacred six". {selectedTaskIds.length}/6 selected.
+                  Tasks from sacred projects. {selectedTaskIds.length}/6 selected.
                 </p>
                 {selectedTaskIds.length > 0 && selectedTaskIds.length < 6 && (
                   <p className="text-sm text-green-600 dark:text-green-400 mt-1">
@@ -668,7 +747,7 @@ export default function TodayPage() {
               <div className="space-y-2">
                 {eligibleTasks.length > 0 ? (
                   eligibleTasks.map((task) => (
-                    <div key={task._id} className="flex items-start space-x-2 p-2 rounded-md hover:bg-accent">
+                    <div key={task._id} className={`flex items-start space-x-2 p-2 rounded-md hover:bg-accent ${task.dueDate && new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? "bg-red-50 dark:bg-red-900/20" : ""}`}>
                       <Checkbox 
                         id={`eligible-${task._id}`}
                         checked={selectedTaskIds.includes(task._id)}
@@ -682,7 +761,6 @@ export default function TodayPage() {
                         >
                           {task.name}
                           {task.status === "done" && <CheckCircle2 className="h-4 w-4 ml-2 text-green-500" />}
-                          {task.isRecurring && <Repeat className="h-4 w-4 ml-2 text-blue-500" />}
                         </label>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
                           <span className="text-xs text-muted-foreground">Project: {task.projectName}</span>
@@ -690,8 +768,14 @@ export default function TodayPage() {
                             Priority: {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                           </span>
                           {task.dueDate && (
-                            <span className="text-xs text-muted-foreground">
+                            <span className={`text-xs ${new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? "text-red-600 dark:text-red-400 font-medium" : "text-muted-foreground"}`}>
                               Due: {new Date(task.dueDate).toLocaleDateString()}
+                              {new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) && " (Overdue)"}
+                            </span>
+                          )}
+                          {task.isRecurring && (
+                            <span className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 px-2 py-1 rounded-full">
+                              Recurring: {task.recurringDays?.map(day => day.slice(0, 3)).join(", ")}
                             </span>
                           )}
                         </div>
@@ -750,8 +834,9 @@ export default function TodayPage() {
                         Priority: {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
                       </span>
                       {task.dueDate && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className={`text-xs ${new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? "text-red-600 dark:text-red-400 font-medium" : "text-muted-foreground"}`}>
                           Due: {new Date(task.dueDate).toLocaleDateString()}
+                          {new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) && " (Overdue)"}
                         </span>
                       )}
                     </div>

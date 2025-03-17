@@ -46,9 +46,7 @@ router.post('/recommend-tasks', auth, async (req, res) => {
     // Filter for Sacred Six projects only (and exclude archived projects)
     const sacredSixProjects = projects.filter(project => 
       !project.isArchived && // Exclude archived projects
-      project.tags && project.tags.some(tag => 
-        tag.toLowerCase().includes('sacred') && tag.toLowerCase().includes('six')
-      )
+      project.isSacred // Use the new isSacred flag
     );
     
     // If no Sacred Six projects found, use all active (non-archived) projects
@@ -110,11 +108,13 @@ router.post('/recommend-tasks', auth, async (req, res) => {
       
       Based on priority, due dates, recurring status, and estimated time, select exactly 6 tasks that the user should focus on today.
       Consider the following criteria:
-      1. High priority tasks should generally be selected first
-      2. Tasks with closer due dates should be prioritized
-      3. Recurring tasks that are scheduled for today should be prioritized
-      4. Try to select a balanced mix of quick wins and important tasks
-      5. If possible, group related tasks from the same project
+      1. Overdue tasks (tasks with due dates in the past) should be given highest priority
+      2. High priority tasks should generally be selected next
+      3. Tasks with closer due dates should be prioritized
+      4. Recurring tasks that are scheduled for today should be prioritized
+      5. Try to select a balanced mix of quick wins and important tasks
+      6. If possible, group related tasks from the same project
+      7. Prioritize tasks that are recurring or have a deadline for today
       
       Return ONLY a JSON array of the 6 selected task IDs, with no additional text or explanation.
       Format: ["id1", "id2", "id3", "id4", "id5", "id6"]
@@ -190,19 +190,32 @@ router.post('/recommend-tasks', auth, async (req, res) => {
       // Fallback: select tasks based on priority and due date
       console.log('Using fallback task selection');
       
-      // Sort tasks by priority (high > medium > low) and then by due date
+      // Sort tasks by overdue status, then priority, then due date
+      const today = new Date();
+      today.setHours(0, 0, 0, 0); // Set to beginning of day for comparison
+      
       const sortedTasks = [...incompleteTasks].sort((a, b) => {
-        // First sort by priority
+        // First check for overdue tasks (due dates in the past)
+        const aDate = a.dueDate ? new Date(a.dueDate) : null;
+        const bDate = b.dueDate ? new Date(b.dueDate) : null;
+        
+        const aIsOverdue = aDate && aDate < today;
+        const bIsOverdue = bDate && bDate < today;
+        
+        if (aIsOverdue && !bIsOverdue) return -1; // a is overdue, b is not
+        if (!aIsOverdue && bIsOverdue) return 1;  // b is overdue, a is not
+        
+        // If both are overdue or both are not overdue, sort by priority
         const priorityOrder = { high: 0, medium: 1, low: 2 };
         const priorityDiff = priorityOrder[a.priority] - priorityOrder[b.priority];
         if (priorityDiff !== 0) return priorityDiff;
         
         // Then by due date (if available)
-        if (a.dueDate && b.dueDate) {
-          return new Date(a.dueDate) - new Date(b.dueDate);
+        if (aDate && bDate) {
+          return aDate - bDate;
         }
-        if (a.dueDate) return -1; // a has due date, b doesn't
-        if (b.dueDate) return 1;  // b has due date, a doesn't
+        if (aDate) return -1; // a has due date, b doesn't
+        if (bDate) return 1;  // b has due date, a doesn't
         
         return 0;
       });
