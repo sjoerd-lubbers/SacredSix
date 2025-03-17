@@ -84,22 +84,22 @@ export default function DashboardLayout({
       items: [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { href: "/dashboard/today", label: "Today", icon: CheckSquare },
-        { href: "/dashboard/projects", label: "Projects", icon: Calendar },
+        { href: "/dashboard/projects", label: "My Projects", icon: Calendar },
         { href: "/dashboard/shared-projects", label: "Shared Projects", icon: Users },
       ]
     },
     {
-      title: "Sacred Method",
+      title: "Sacred System",
       items: [
-        { href: "/dashboard/method", label: "Method", icon: BookOpen },
-        { href: "/dashboard/personal-mission", label: "Persoonlijke Missie", icon: Target },
+        { href: "/dashboard/method", label: "Method & Principles", icon: BookOpen },
+        { href: "/dashboard/personal-mission", label: "My Mission & Values", icon: Target },
         { href: "/dashboard/reflections", label: "Reflections", icon: BookOpen },
       ]
     },
     {
       title: "Settings",
       items: [
-        { href: "/dashboard/settings", label: "Settings", icon: Settings },
+        { href: "/dashboard/settings", label: "Preferences", icon: Settings },
       ]
     }
   ]
@@ -108,7 +108,7 @@ export default function DashboardLayout({
   const adminSection = user.role === "admin" ? {
     title: "Admin",
     items: [
-      { href: "/dashboard/admin", label: "Admin", icon: ShieldCheck }
+      { href: "/dashboard/admin", label: "System Admin", icon: ShieldCheck }
     ]
   } : null
 

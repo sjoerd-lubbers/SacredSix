@@ -5,7 +5,6 @@ import axios from "axios"
 import { Save } from "lucide-react"
 import ApiKeysTab from "@/components/ApiKeysTab"
 import DataExportTab from "@/components/DataExportTab"
-import ElementsTab from "@/components/ElementsTab"
 
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
@@ -168,9 +167,8 @@ export default function SettingsPage() {
       </div>
       <hr className="my-4 border-t border-gray-200 dark:border-gray-700" />
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="profile">Profile</TabsTrigger>
-          <TabsTrigger value="mission-values">Mission & Values</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="api-keys">API Keys</TabsTrigger>
           <TabsTrigger value="data-export">Export/Import</TabsTrigger>
@@ -304,9 +302,6 @@ export default function SettingsPage() {
               </Form>
             </CardContent>
           </Card>
-        </TabsContent>
-        <TabsContent value="mission-values" className="mt-6">
-          <ElementsTab />
         </TabsContent>
         <TabsContent value="api-keys" className="mt-6">
           <ApiKeysTab />
