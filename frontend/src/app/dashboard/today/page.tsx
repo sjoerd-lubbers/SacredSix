@@ -42,6 +42,7 @@ interface Project {
   description?: string
   tags: string[]
   isArchived: boolean
+  isSacred?: boolean
   sortOrder: number
   createdAt: string
   updatedAt: string
@@ -166,15 +167,10 @@ export default function TodayPage() {
       
       setTasks(tasksWithProjects)
       
-      // Get tasks from active projects with any tag containing 'sacred' or 'six'
+      // Get tasks from active sacred projects using the isSacred field
       const sacredSixProjects = allProjects.filter((project: Project) => 
         !project.isArchived && // Filter out archived projects
-        project.tags && project.tags.some((tag: string) => {
-          const tagLower = tag.toLowerCase();
-          return tagLower.includes('sacredsix') || 
-                 tagLower.includes('sacred') || 
-                 tagLower.includes('six');
-        })
+        project.isSacred // Use the isSacred field instead of tags
       )
       
       console.log('Sacred Six Projects:', sacredSixProjects.map((p: Project) => ({ 
