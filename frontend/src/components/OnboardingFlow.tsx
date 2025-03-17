@@ -242,7 +242,7 @@ export function OnboardingFlow() {
         <div className="flex">
           <Input
             id="values"
-            placeholder="Add a value (e.g., Freedom, Growth, Creativity)"
+            placeholder="Add values separated by commas (e.g., Freedom, Growth, Creativity)"
             value={newValue}
             onChange={(e) => setNewValue(e.target.value)}
             className="flex-1 mr-2"
@@ -251,8 +251,24 @@ export function OnboardingFlow() {
             type="button"
             onClick={() => {
               if (newValue.trim()) {
-                setValues([...values, newValue.trim()])
-                setNewValue("")
+                // Split by comma and trim each value
+                const valueArray = newValue
+                  .split(',')
+                  .map(v => v.trim())
+                  .filter(v => v.length > 0);
+                
+                // Add new values while respecting the 10 value limit
+                const updatedValues = [...values];
+                for (const value of valueArray) {
+                  if (updatedValues.length < 10) {
+                    updatedValues.push(value);
+                  } else {
+                    break;
+                  }
+                }
+                
+                setValues(updatedValues);
+                setNewValue("");
               }
             }}
             disabled={values.length >= 10}

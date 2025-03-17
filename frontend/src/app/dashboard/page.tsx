@@ -191,14 +191,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Completion Rate Card and Sacred Six Projects side by side */}
-      <div className="grid gap-6 md:grid-cols-5">
+      <div className="grid gap-6 md:grid-cols-6">
         {/* Completion Rate Card - Left Side */}
         <div className="md:col-span-2">
           <CompletionRateCard />
         </div>
         
         {/* Sacred Six Projects - Right Side */}
-        <div className="md:col-span-3 rounded-lg border bg-card p-4 shadow-sm">
+        <div className="md:col-span-4 rounded-lg border bg-card p-4 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-medium">Sacred Six</h3>
             <Button variant="outline" size="sm" asChild>
@@ -213,8 +213,10 @@ export default function DashboardPage() {
                 .map((project) => (
                   <div key={project._id} className="rounded-md border p-4">
                     <div className="flex items-center">
-                      <div className={`mr-3 text-lg font-bold text-center w-8 h-8 rounded-full flex items-center justify-center bg-amber-100 text-amber-700`}>
-                        {projects.filter(p => p.isSacred).indexOf(project) + 1}
+                      <div className="mr-3 flex-shrink-0" style={{ width: '32px', height: '32px' }}>
+                        <div className="w-full h-full rounded-full flex items-center justify-center bg-amber-100 text-amber-700">
+                          <span className="text-sm font-bold">{projects.filter(p => p.isSacred).indexOf(project) + 1}</span>
+                        </div>
                       </div>
                       <h4 className="font-medium">{project.name}</h4>
                     </div>

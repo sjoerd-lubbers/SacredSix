@@ -162,8 +162,10 @@ export function SacredProjectsList() {
           {projects.map((project, index) => (
             <div key={project._id} className="rounded-lg border bg-card p-4 shadow-sm">
               <div className="flex items-center">
-                <div className="mr-3 text-lg font-bold text-center w-8 h-8 rounded-full flex items-center justify-center bg-amber-100 text-amber-700">
-                  {index + 1}
+                <div className="mr-3 flex-shrink-0" style={{ width: '32px', height: '32px' }}>
+                  <div className="w-full h-full rounded-full flex items-center justify-center bg-amber-100 text-amber-700">
+                    <span className="text-sm font-bold">{index + 1}</span>
+                  </div>
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center">
