@@ -1,6 +1,6 @@
 "use client"
 
-import ReflectionsTab from "@/components/ReflectionsTab"
+import { SacredProjectsList } from "@/components/SacredProjectsList"
 
 export default function SacredSixPage() {
   return (
@@ -8,11 +8,11 @@ export default function SacredSixPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Sacred Six</h1>
         <p className="text-muted-foreground mt-2">
-          Beheer je dagelijkse Sacred Six taken
+          Manage your Sacred Six projects
         </p>
       </div>
 
-      <ReflectionsTab />
+      <SacredProjectsList />
     </div>
   )
 }

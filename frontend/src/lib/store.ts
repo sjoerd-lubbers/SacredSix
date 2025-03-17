@@ -17,6 +17,7 @@ export interface Project {
   description?: string;
   tags: string[];
   isArchived: boolean;
+  isSacred: boolean;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
@@ -236,25 +237,60 @@ export const useProjectsStore = create<ProjectsState>((set, get) => ({
         headers: { Authorization: `Bearer ${token}` }
       };
       
-      await axios.put(
+      // Send the reorder request to the server
+      const response = await axios.put(
         apiEndpoint("projects/reorder"),
         { projectIds },
         config
       );
       
-      // Reorder projects in the store
-      const { projects } = get();
-      const reorderedActiveProjects = projectIds.map(
-        id => projects.find(p => p._id === id)
-      ).filter(Boolean) as Project[];
+      // The server returns the updated projects with the new order
+      const updatedProjects = response.data;
       
-      set(state => ({
-        activeProjects: reorderedActiveProjects,
-        projects: [
-          ...reorderedActiveProjects,
-          ...state.archivedProjects
-        ]
-      }));
+      // Update the store with the server response
+      set(state => {
+        // Create a map of all projects for easy lookup
+        const projectMap = new Map<string, Project>();
+        state.projects.forEach((project: Project) => {
+          projectMap.set(project._id, project);
+        });
+        
+        // Update the map with the new order from the server
+        updatedProjects.forEach((project: Project) => {
+          projectMap.set(project._id, project);
+        });
+        
+        // Separate active and archived projects
+        const active: Project[] = [];
+        const archived: Project[] = [];
+        
+        // First add all projects in the new order
+        projectIds.forEach(id => {
+          const project = projectMap.get(id);
+          if (project && !project.isArchived) {
+            active.push(project);
+          }
+        });
+        
+        // Then add any other active projects not in the reordered list
+        state.activeProjects.forEach(project => {
+          if (!projectIds.includes(project._id) && !project.isArchived) {
+            active.push(project);
+          }
+        });
+        
+        // Add all archived projects
+        state.archivedProjects.forEach(project => {
+          archived.push(project);
+        });
+        
+        // Return the updated state
+        return {
+          activeProjects: active,
+          archivedProjects: archived,
+          projects: [...active, ...archived]
+        };
+      });
       
       return true;
     } catch (error) {

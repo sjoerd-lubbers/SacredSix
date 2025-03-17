@@ -27,6 +27,7 @@ interface Project {
   taskCount?: number
   isArchived?: boolean
   tags?: string[]
+  isSacred?: boolean
 }
 
 interface SparklineData {
@@ -189,41 +190,45 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* Completion Rate Card */}
-      <CompletionRateCard />
-
-      {/* Removed Task Status and Recent Tasks sections as requested */}
-
-      {/* Sacred Six Projects */}
-      <div className="rounded-lg border bg-card p-4 shadow-sm">
-        <div className="mb-4 flex items-center justify-between">
-          <h3 className="font-medium">Sacred Six</h3>
-          <Button variant="outline" size="sm" asChild>
-            <a href="/dashboard/sacred-six">View All</a>
-          </Button>
+      {/* Completion Rate Card and Sacred Six Projects side by side */}
+      <div className="grid gap-6 md:grid-cols-5">
+        {/* Completion Rate Card - Left Side */}
+        <div className="md:col-span-2">
+          <CompletionRateCard />
         </div>
-        {projects.length > 0 ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {projects
-              .filter(project => 
-                project.tags && project.tags.some(tag => 
-                  tag.toLowerCase().includes('sacred') && tag.toLowerCase().includes('six')
-                )
-              )
-              .slice(0, 6)
-              .map((project) => (
-                <div key={project._id} className="rounded-md border p-4">
-                  <h4 className="font-medium">{project.name}</h4>
-                  <p className="mt-1 text-sm text-muted-foreground">{project.taskCount || 0} tasks</p>
-                  <Button variant="ghost" size="sm" className="mt-2" asChild>
-                    <a href={`/dashboard/projects/${project._id}`}>View Project</a>
-                  </Button>
-                </div>
-              ))}
+        
+        {/* Sacred Six Projects - Right Side */}
+        <div className="md:col-span-3 rounded-lg border bg-card p-4 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-medium">Sacred Six</h3>
+            <Button variant="outline" size="sm" asChild>
+              <a href="/dashboard/sacred-six">View All</a>
+            </Button>
           </div>
-        ) : (
-          <p className="text-center text-muted-foreground">No Sacred Six projects yet</p>
-        )}
+          {projects.length > 0 ? (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {projects
+                .filter(project => project.isSacred)
+                .slice(0, 6)
+                .map((project) => (
+                  <div key={project._id} className="rounded-md border p-4">
+                    <div className="flex items-center">
+                      <div className={`mr-3 text-lg font-bold text-center w-8 h-8 rounded-full flex items-center justify-center bg-amber-100 text-amber-700`}>
+                        {projects.filter(p => p.isSacred).indexOf(project) + 1}
+                      </div>
+                      <h4 className="font-medium">{project.name}</h4>
+                    </div>
+                    <p className="mt-1 text-sm text-muted-foreground">{project.taskCount || 0} tasks</p>
+                    <Button variant="ghost" size="sm" className="mt-2" asChild>
+                      <a href={`/dashboard/projects/${project._id}`}>View Project</a>
+                    </Button>
+                  </div>
+                ))}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground">No Sacred Six projects yet</p>
+          )}
+        </div>
       </div>
     </div>
   )

@@ -1,9 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { Pencil, Trash2, Archive, RotateCcw, Users, Share } from "lucide-react"
+import { useState, useEffect } from "react"
+import axios from "axios"
+import { Pencil, Trash2, Archive, RotateCcw, Users, Share, Flame } from "lucide-react"
 import { Project, Collaborator } from "@/lib/store"
 import { User } from "@/lib/userStore"
+import { apiEndpoint } from "@/config"
 
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -54,6 +56,35 @@ export default function ProjectCard({
   onProjectUpdated
 }: ProjectCardProps) {
   const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [sacredProjectsCount, setSacredProjectsCount] = useState<number>(0)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+
+  useEffect(() => {
+    // Fetch the count of sacred projects when the dialog is opened
+    if (isDialogOpen) {
+      fetchSacredProjectsCount()
+    }
+  }, [isDialogOpen])
+
+  const fetchSacredProjectsCount = async () => {
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) return
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+
+      const response = await axios.get(apiEndpoint("projects"), config)
+      const sacredProjects = response.data.filter(
+        (p: Project) => p.isSacred && !p.isArchived && p._id !== project._id
+      )
+      
+      setSacredProjectsCount(sacredProjects.length)
+    } catch (error) {
+      console.error("Error fetching sacred projects count:", error)
+    }
+  }
 
   const handleUpdate = async (data: ProjectFormValues) => {
     if (!editingProject) return
@@ -67,11 +98,13 @@ export default function ProjectCard({
       {
         name: data.name,
         description: data.description,
-        tags: tagsArray
+        tags: tagsArray,
+        isSacred: data.isSacred
       }
     )
     
     setEditingProject(null)
+    setIsDialogOpen(false)
   }
 
   return (
@@ -80,6 +113,12 @@ export default function ProjectCard({
         <div>
           <div className="flex items-center">
             <h3 className="font-medium">{project.name}</h3>
+            {project.isSacred && (
+              <Badge variant="secondary" className="ml-2 flex items-center gap-1 bg-amber-100 text-amber-700" title="Sacred Project">
+                <Flame className="h-3 w-3" />
+                Sacred
+              </Badge>
+            )}
             {project.collaborators && project.collaborators.length > 0 && (
               <Badge variant="outline" className="ml-2 flex items-center gap-1" title="Shared with others">
                 <Users className="h-3 w-3" />
@@ -130,7 +169,7 @@ export default function ProjectCard({
               <RotateCcw className="h-4 w-4" />
             </Button>
           )}
-          <Dialog>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
               <Button
                 variant="ghost"
@@ -149,11 +188,14 @@ export default function ProjectCard({
                   name: project.name,
                   description: project.description || "",
                   tags: project.tags.join(", "),
+                  isSacred: project.isSacred || false,
                 }}
                 onSubmit={handleUpdate}
                 isSubmitting={isSubmitting}
                 submitLabel="Update Project"
                 submittingLabel="Updating..."
+                disableSacredCheckbox={sacredProjectsCount >= 6 && !project.isSacred}
+                disabledSacredMessage="Maximum of 6 sacred projects reached"
               />
             </DialogContent>
           </Dialog>

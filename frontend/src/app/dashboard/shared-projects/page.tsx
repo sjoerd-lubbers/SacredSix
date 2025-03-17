@@ -236,7 +236,9 @@ export default function SharedProjectsPage() {
                 <Card key={project._id}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
-                      <CardTitle className="truncate">{project.projectId.name}</CardTitle>
+                      <CardTitle className="truncate">
+                        {project.projectId ? project.projectId.name : 'Unknown Project'}
+                      </CardTitle>
                       {getStatusBadge(project.status)}
                     </div>
                     <CardDescription>
@@ -245,7 +247,7 @@ export default function SharedProjectsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {project.projectId.description && (
+                      {project.projectId?.description && (
                         <p className="text-sm text-muted-foreground">{project.projectId.description}</p>
                       )}
                       {project.message && (
@@ -253,7 +255,7 @@ export default function SharedProjectsPage() {
                           <p className="text-sm italic">"{project.message}"</p>
                         </div>
                       )}
-                      {project.projectId.tags.length > 0 && (
+                      {project.projectId?.tags?.length > 0 && (
                         <div className="flex flex-wrap gap-1 mt-2">
                           {project.projectId.tags.map((tag, index) => (
                             <Badge key={index} variant="secondary" className="text-xs">
@@ -292,7 +294,7 @@ export default function SharedProjectsPage() {
                     <CardFooter>
                       <Button
                         className="w-full"
-                        onClick={() => router.push(`/dashboard/projects/${project.projectId._id}`)}
+                      onClick={() => project.projectId ? router.push(`/dashboard/projects/${project.projectId._id}`) : null}
                       >
                         View Project
                       </Button>
@@ -319,7 +321,9 @@ export default function SharedProjectsPage() {
                 <Card key={project._id}>
                   <CardHeader>
                     <div className="flex justify-between items-start">
-                      <CardTitle className="truncate">{project.projectId.name}</CardTitle>
+                      <CardTitle className="truncate">
+                        {project.projectId ? project.projectId.name : 'Unknown Project'}
+                      </CardTitle>
                       {getStatusBadge(project.status)}
                     </div>
                     <CardDescription>
@@ -328,7 +332,7 @@ export default function SharedProjectsPage() {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-2">
-                      {project.projectId.description && (
+                      {project.projectId?.description && (
                         <p className="text-sm text-muted-foreground">{project.projectId.description}</p>
                       )}
                       {project.message && (
@@ -371,7 +375,7 @@ export default function SharedProjectsPage() {
                     <Button
                       className="w-full"
                       variant="outline"
-                      onClick={() => router.push(`/dashboard/projects/${project.projectId._id}`)}
+                      onClick={() => project.projectId ? router.push(`/dashboard/projects/${project.projectId._id}`) : null}
                     >
                       View Original Project
                     </Button>

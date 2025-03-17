@@ -1,8 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Plus, Search, X } from "lucide-react"
-import { DragDropContext, Droppable, DropResult } from "react-beautiful-dnd"
+import { Plus, Search, X, ArrowUp, ArrowDown, Pencil, Trash2, Archive, Users, Share, Flame } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
@@ -16,11 +15,22 @@ import {
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { useProjectsStore, Project } from "@/lib/store"
 import { useUserStore } from "@/lib/userStore"
 import ProjectForm, { ProjectFormValues } from "@/components/ProjectForm"
 import ProjectCard from "@/components/ProjectCard"
-import DraggableProjectCard from "@/components/DraggableProjectCard"
+import ProjectSharingModal from "@/components/ProjectSharingModal"
 
 export default function ProjectsPage() {
   const { toast } = useToast()
@@ -43,6 +53,10 @@ export default function ProjectsPage() {
   const [isArchiving, setIsArchiving] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedTag, setSelectedTag] = useState<string | null>(null)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [sacredProjectsCount, setSacredProjectsCount] = useState<number>(0)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
   useEffect(() => {
     const initializeData = async () => {
@@ -62,30 +76,53 @@ export default function ProjectsPage() {
     initializeData()
   }, [fetchProjects, toast])
   
+  // Count sacred projects when the create or edit dialog is opened
+  useEffect(() => {
+    if (isCreateDialogOpen || isEditDialogOpen) {
+      // Count sacred projects excluding the currently edited project if it's sacred
+      const count = activeProjects.filter(project => 
+        project.isSacred && (!editingProject || project._id !== editingProject._id)
+      ).length
+      setSacredProjectsCount(count)
+    }
+  }, [isCreateDialogOpen, isEditDialogOpen, activeProjects, editingProject])
+  
   // Filter projects based on search query and selected tag
   const filteredActiveProjects = activeProjects.filter(project => {
+    // Ensure project has all required properties
+    if (!project || !project.name) {
+      return false;
+    }
+    
     const matchesSearch = searchQuery === "" || 
       project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (project.description && project.description.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    const matchesTag = selectedTag === null || project.tags.includes(selectedTag);
+    const matchesTag = selectedTag === null || (project.tags && project.tags.includes(selectedTag));
     
     return matchesSearch && matchesTag;
   });
   
   const filteredArchivedProjects = archivedProjects.filter(project => {
+    // Ensure project has all required properties
+    if (!project || !project.name) {
+      return false;
+    }
+    
     const matchesSearch = searchQuery === "" || 
       project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (project.description && project.description.toLowerCase().includes(searchQuery.toLowerCase()));
     
-    const matchesTag = selectedTag === null || project.tags.includes(selectedTag);
+    const matchesTag = selectedTag === null || (project.tags && project.tags.includes(selectedTag));
     
     return matchesSearch && matchesTag;
   });
   
   // Get all unique tags from all projects
   const allTags = Array.from(new Set(
-    projects.flatMap(project => project.tags)
+    projects
+      .filter(project => project && project.tags) // Filter out projects with missing tags
+      .flatMap(project => project.tags)
   )).sort();
   
   const handleTagClick = (tag: string) => {
@@ -96,63 +133,59 @@ export default function ProjectsPage() {
     }
   };
   
-  const handleDragEnd = async (result: DropResult) => {
-    const { destination, source } = result
-    
-    // If dropped outside the list or no movement
-    if (!destination || 
-        (destination.droppableId === source.droppableId && 
-         destination.index === source.index)) {
-      return
+  const handleMoveProject = async (index: number, direction: 'up' | 'down') => {
+    if (
+      (direction === 'up' && index === 0) || 
+      (direction === 'down' && index === filteredActiveProjects.length - 1)
+    ) {
+      return; // Can't move further in this direction
     }
     
-    // Only handle reordering in the active projects list
-    if (source.droppableId !== "active-projects" || 
-        destination.droppableId !== "active-projects") {
-      return
-    }
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
     
-    // Reorder the projects locally
-    const reorderedProjects = Array.from(filteredActiveProjects)
-    const [removed] = reorderedProjects.splice(source.index, 1)
-    reorderedProjects.splice(destination.index, 0, removed)
+    // Create a copy of the projects array
+    const reorderedProjects = [...filteredActiveProjects];
+    
+    // Swap the projects
+    [reorderedProjects[index], reorderedProjects[newIndex]] = 
+      [reorderedProjects[newIndex], reorderedProjects[index]];
     
     // Send the new order to the server
     try {
-      setIsReordering(true)
-      const projectIds = reorderedProjects.map(project => project._id)
+      setIsReordering(true);
+      const projectIds = reorderedProjects.map(project => project._id);
       
-      const success = await reorderProjects(projectIds)
+      const success = await reorderProjects(projectIds);
       
       if (success) {
         toast({
           title: "Projects reordered",
           description: "Your projects have been reordered successfully.",
-        })
+        });
       } else {
         toast({
           variant: "destructive",
           title: "Error",
           description: "Failed to reorder projects. Please try again.",
-        })
+        });
         
         // Revert to the original order on error
-        fetchProjects(archivedProjects.length > 0)
+        fetchProjects(archivedProjects.length > 0);
       }
     } catch (error) {
-      console.error("Error reordering projects:", error)
+      console.error("Error reordering projects:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to reorder projects. Please try again.",
-      })
+      });
       
       // Revert to the original order on error
-      fetchProjects(archivedProjects.length > 0)
+      fetchProjects(archivedProjects.length > 0);
     } finally {
-      setIsReordering(false)
+      setIsReordering(false);
     }
-  }
+  };
   
   const handleArchiveToggle = async (projectId: string, archive: boolean) => {
     try {
@@ -196,7 +229,8 @@ export default function ProjectsPage() {
       const newProject = await createProject({
         name: data.name,
         description: data.description,
-        tags: tagsArray
+        tags: tagsArray,
+        isSacred: data.isSacred
       })
 
       if (newProject) {
@@ -223,37 +257,49 @@ export default function ProjectsPage() {
     }
   }
 
-  const handleUpdateProject = async (projectId: string, data: Partial<Project>): Promise<Project | null> => {
-    setIsSubmitting(true)
+  const handleUpdateProject = async (data: ProjectFormValues) => {
+    if (!editingProject) return;
+    
+    setIsSubmitting(true);
     try {
-      const updatedProject = await updateProject(projectId, data)
+      const tagsArray = data.tags 
+        ? data.tags.split(",").map(tag => tag.trim()).filter(tag => tag !== "") 
+        : [];
+
+      const updatedProject = await updateProject(
+        editingProject._id, 
+        {
+          name: data.name,
+          description: data.description,
+          tags: tagsArray,
+          isSacred: data.isSacred
+        }
+      );
       
       if (updatedProject) {
         toast({
           title: "Project updated",
           description: "Your project has been updated successfully.",
-        })
-        return updatedProject
+        });
+        setEditingProject(null);
       } else {
         toast({
           variant: "destructive",
           title: "Error",
           description: "Failed to update project. Please try again.",
-        })
-        return null
+        });
       }
     } catch (error) {
-      console.error("Error updating project:", error)
+      console.error("Error updating project:", error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to update project. Please try again.",
-      })
-      return null
+      });
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleDeleteProject = async (projectId: string) => {
     try {
@@ -292,7 +338,7 @@ export default function ProjectsPage() {
           <h1 className="text-3xl font-bold">Projects</h1>
           <p className="text-muted-foreground">Manage your projects and tasks</p>
         </div>
-        <Dialog>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" /> New Project
@@ -307,6 +353,8 @@ export default function ProjectsPage() {
               isSubmitting={isSubmitting}
               submitLabel="Create Project"
               submittingLabel="Creating..."
+              disableSacredCheckbox={sacredProjectsCount >= 6}
+              disabledSacredMessage="Maximum of 6 sacred projects reached"
             />
           </DialogContent>
         </Dialog>
@@ -373,35 +421,170 @@ export default function ProjectsPage() {
           </TabsList>
           <TabsContent value="active" className="mt-6">
             {filteredActiveProjects.length > 0 ? (
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="active-projects">
-                  {(provided) => (
-                    <div 
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="flex flex-col gap-4 min-h-[200px] p-4 border border-dashed border-gray-300 rounded-lg"
-                    >
-                      {filteredActiveProjects.map((project, index) => (
-                        <DraggableProjectCard
-                          key={project._id}
-                          project={project}
-                          index={index}
-                          user={user}
-                          selectedTag={selectedTag}
-                          isArchiving={isArchiving}
-                          isSubmitting={isSubmitting}
-                          onTagClick={handleTagClick}
-                          onArchiveToggle={handleArchiveToggle}
-                          onUpdate={handleUpdateProject}
-                          onDelete={handleDeleteProject}
-                          onProjectUpdated={() => fetchProjects(true)}
-                        />
-                      ))}
-                      {provided.placeholder}
+              <div className="flex flex-col gap-4 min-h-[200px] p-4 border border-dashed border-gray-300 rounded-lg">
+                {filteredActiveProjects.map((project, index) => (
+                  <div key={project._id} className="flex w-full">
+                    {/* Number and Controls Section */}
+                    <div className="flex-none rounded-l-lg border-t border-l border-b bg-card p-4 shadow-sm flex flex-col items-center justify-center min-w-[80px]">
+                      <div className={`text-xl font-bold text-center w-8 h-8 rounded-full flex items-center justify-center ${project.isSacred ? 'bg-amber-100 text-amber-700' : 'bg-muted'}`}>
+                        {index + 1}
+                      </div>
+                      <div className="flex space-x-1 mt-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6" 
+                          onClick={() => handleMoveProject(index, 'up')}
+                          disabled={index === 0 || isReordering}
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-6 w-6" 
+                          onClick={() => handleMoveProject(index, 'down')}
+                          disabled={index === filteredActiveProjects.length - 1 || isReordering}
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
+                    
+                    {/* Project Details Section */}
+                    <div className="flex-1 rounded-r-lg border-t border-r border-b bg-card p-4 shadow-sm">
+                      <div className="flex flex-col space-y-4">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center">
+                            <h3 className="font-medium">{project.name}</h3>
+                            {project.isSacred && (
+                              <Badge variant="secondary" className="ml-2 flex items-center gap-1 bg-amber-100 text-amber-700" title="Sacred Project">
+                                <Flame className="h-3 w-3" />
+                                Sacred
+                              </Badge>
+                            )}
+                            {project.collaborators && project.collaborators.length > 0 && (
+                              <Badge variant="outline" className="ml-2 flex items-center gap-1" title="Shared with others">
+                                <Users className="h-3 w-3" />
+                                {project.collaborators.length}
+                              </Badge>
+                            )}
+                          </div>
+                          
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handleArchiveToggle(project._id, true)}
+                              disabled={isArchiving}
+                              title="Archive project"
+                            >
+                              <Archive className="h-4 w-4" />
+                            </Button>
+                            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => setEditingProject(project)}
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Edit Project</DialogTitle>
+                                </DialogHeader>
+                                <ProjectForm
+                                  defaultValues={{
+                                    name: editingProject?.name || "",
+                                    description: editingProject?.description || "",
+                                    tags: editingProject?.tags?.join(", ") || "",
+                                    isSacred: editingProject?.isSacred || false,
+                                  }}
+                                  onSubmit={handleUpdateProject}
+                                  isSubmitting={isSubmitting}
+                                  submitLabel="Update Project"
+                                  submittingLabel="Updating..."
+                                  disableSacredCheckbox={sacredProjectsCount >= 6 && !editingProject?.isSacred}
+                                  disabledSacredMessage="Maximum of 6 sacred projects reached"
+                                />
+                              </DialogContent>
+                            </Dialog>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Are you sure you want to delete this project? This action cannot be undone.
+                                    All tasks associated with this project will also be deleted.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteProject(project._id)}>
+                                    Delete
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </div>
+                        </div>
+                        
+                        {project.description && (
+                          <p className="mt-1 text-sm text-muted-foreground">{project.description}</p>
+                        )}
+                        
+                        {project.tags && project.tags.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {project.tags.map((tag, tagIndex) => (
+                              <Badge
+                                key={tagIndex}
+                                className={`cursor-pointer hover:bg-primary/20 ${selectedTag === tag ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}
+                                onClick={() => handleTagClick(tag)}
+                              >
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                        
+                        <div className="flex justify-end gap-2 mt-2">
+                          {user && (
+                            <ProjectSharingModal
+                              projectId={project._id}
+                              projectName={project.name}
+                              ownerId={{ _id: user.id, name: user.name, email: user.email }}
+                              collaborators={(project.collaborators || []).map(collab => ({
+                                ...collab,
+                                userId: typeof collab.userId === 'string' 
+                                  ? { _id: collab.userId, name: '', email: '' } 
+                                  : collab.userId
+                              }))}
+                              currentUserId={user.id}
+                              onProjectUpdated={() => fetchProjects(true)}
+                              trigger={
+                                <Button variant="outline" size="sm" className="flex items-center gap-1">
+                                  <Share className="h-4 w-4" />
+                                  Share
+                                </Button>
+                              }
+                            />
+                          )}
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={`/dashboard/projects/${project._id}`}>View Tasks</a>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             ) : (
               <div className="rounded-lg border bg-card p-8 text-center shadow-sm">
                 <h3 className="text-lg font-medium">No active projects found</h3>
@@ -446,7 +629,13 @@ export default function ProjectsPage() {
                     isSubmitting={isSubmitting}
                     onTagClick={handleTagClick}
                     onArchiveToggle={handleArchiveToggle}
-                    onUpdate={handleUpdateProject}
+                    onUpdate={(projectId, data) => {
+                      // Create a wrapper function to match the expected signature
+                      if (data.isSacred !== undefined) {
+                        return updateProject(projectId, data);
+                      }
+                      return Promise.resolve(null);
+                    }}
                     onDelete={handleDeleteProject}
                     onProjectUpdated={() => fetchProjects(true)}
                   />
