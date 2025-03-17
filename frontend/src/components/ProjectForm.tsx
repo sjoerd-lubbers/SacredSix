@@ -124,7 +124,7 @@ export default function ProjectForm({
                 <FormLabel>Sacred Project</FormLabel>
                 <FormDescription>
                   Mark this as one of your sacred 6 projects
-                  {disableSacredCheckbox && !field.value && (
+                  {disableSacredCheckbox && (
                     <div className="mt-1 text-amber-600 text-xs">
                       {disabledSacredMessage}
                     </div>
