@@ -549,7 +549,7 @@ export default function ProjectsPage() {
                             {project.tags.map((tag, tagIndex) => (
                               <Badge
                                 key={tagIndex}
-                                className={`cursor-pointer hover:bg-primary/20 ${selectedTag === tag ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}
+                                className={`cursor-pointer ${selectedTag === tag ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}
                                 onClick={() => handleTagClick(tag)}
                               >
                                 {tag}
