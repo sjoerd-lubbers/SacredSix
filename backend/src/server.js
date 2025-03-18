@@ -26,13 +26,43 @@ const { initSchedulers } = require('./utils/scheduler');
 const app = express();
 
 // Middleware
-app.use(cors({
-  origin: ['https://sacred6.ams8.nl', 'http://localhost:3000'],
+const corsOptions = {
+  origin: function(origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if the origin is allowed
+    const allowedOrigins = [
+      'https://sacred6.ams8.nl',
+      'http://localhost:3000'
+    ];
+    
+    // If CORS_ORIGIN is set in environment variables, add it to allowed origins
+    if (process.env.CORS_ORIGIN) {
+      const corsOrigins = process.env.CORS_ORIGIN.split(',');
+      allowedOrigins.push(...corsOrigins);
+    }
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+
+// Add a middleware to log all requests for debugging
+app.use((req, res, next) => {
+  console.log(`${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+  next();
+});
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI)
