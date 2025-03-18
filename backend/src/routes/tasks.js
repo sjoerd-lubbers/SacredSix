@@ -384,6 +384,180 @@ router.put('/today/select', auth, async (req, res) => {
   }
 });
 
+// @route   POST /api/tasks/:id/logs
+// @desc    Add a log entry to a task
+// @access  Private
+router.post(
+  '/:id/logs',
+  [
+    auth,
+    body('content', 'Log content is required').not().isEmpty()
+  ],
+  async (req, res) => {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { content } = req.body;
+
+      // Find task by ID
+      let task = await Task.findById(req.params.id);
+
+      // Check if task exists
+      if (!task) {
+        return res.status(404).json({ message: 'Task not found' });
+      }
+
+      // Get the project to check permissions
+      const project = await Project.findById(task.projectId);
+      if (!project) {
+        return res.status(404).json({ message: 'Project not found' });
+      }
+
+      // Check if user is owner or collaborator with edit permissions
+      const isOwner = project.ownerId.toString() === req.userId.toString();
+      const isEditor = project.collaborators.some(
+        collab => collab.userId.toString() === req.userId.toString() && 
+                 ['editor', 'admin'].includes(collab.role)
+      );
+
+      // Only the task creator, project owner, or collaborators with edit permissions can add logs
+      const isTaskCreator = task.userId.toString() === req.userId.toString();
+      
+      if (!isTaskCreator && !isOwner && !isEditor) {
+        return res.status(401).json({ message: 'Not authorized to add logs to this task' });
+      }
+
+      // Get the user who is adding the log
+      const user = await User.findById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Create new log entry
+      const logEntry = {
+        content,
+        userId: req.userId,
+        userName: user.name,
+        createdAt: new Date()
+      };
+
+      // Add log entry to task
+      task.logs = task.logs || [];
+      task.logs.push(logEntry);
+
+      // Save updated task
+      await task.save();
+
+      res.json(task);
+    } catch (error) {
+      console.error(error.message);
+      if (error.kind === 'ObjectId') {
+        return res.status(404).json({ message: 'Task not found' });
+      }
+      res.status(500).send('Server error');
+    }
+  }
+);
+
+// @route   GET /api/tasks/:id/logs
+// @desc    Get all logs for a task
+// @access  Private
+router.get('/:id/logs', auth, async (req, res) => {
+  try {
+    // Find task by ID
+    const task = await Task.findById(req.params.id);
+
+    // Check if task exists
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Get the project to check permissions
+    const project = await Project.findById(task.projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Check if user is owner or collaborator
+    const isOwner = project.ownerId.toString() === req.userId.toString();
+    const isCollaborator = project.collaborators.some(
+      collab => collab.userId.toString() === req.userId.toString()
+    );
+
+    if (!isOwner && !isCollaborator) {
+      return res.status(401).json({ message: 'Not authorized to view logs for this task' });
+    }
+
+    // Return logs sorted by creation date (newest first)
+    const logs = task.logs || [];
+    res.json(logs.sort((a, b) => b.createdAt - a.createdAt));
+  } catch (error) {
+    console.error(error.message);
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+    res.status(500).send('Server error');
+  }
+});
+
+// @route   DELETE /api/tasks/:id/logs/:logId
+// @desc    Delete a log entry from a task
+// @access  Private
+router.delete('/:id/logs/:logId', auth, async (req, res) => {
+  try {
+    // Find task by ID
+    const task = await Task.findById(req.params.id);
+
+    // Check if task exists
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Get the project to check permissions
+    const project = await Project.findById(task.projectId);
+    if (!project) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    // Find the log entry
+    const logIndex = task.logs.findIndex(log => log._id.toString() === req.params.logId);
+    
+    if (logIndex === -1) {
+      return res.status(404).json({ message: 'Log entry not found' });
+    }
+    
+    // Check if the user is the creator of the log
+    const isLogCreator = task.logs[logIndex].userId.toString() === req.userId.toString();
+    
+    // Check if user is project owner or admin
+    const isOwner = project.ownerId.toString() === req.userId.toString();
+    const isAdmin = project.collaborators.some(
+      collab => collab.userId.toString() === req.userId.toString() && collab.role === 'admin'
+    );
+
+    // Only allow deletion if the user is the log creator, project owner, or admin
+    if (!isLogCreator && !isOwner && !isAdmin) {
+      return res.status(401).json({ message: 'Not authorized to delete this log entry' });
+    }
+
+    // Remove the log entry
+    task.logs.splice(logIndex, 1);
+    await task.save();
+
+    res.json({ message: 'Log entry removed' });
+  } catch (error) {
+    console.error(error.message);
+    if (error.kind === 'ObjectId') {
+      return res.status(404).json({ message: 'Task or log entry not found' });
+    }
+    res.status(500).send('Server error');
+  }
+});
+
 // @route   GET /api/tasks/stats/sparkline
 // @desc    Get task creation and completion data for sparklines
 // @access  Private

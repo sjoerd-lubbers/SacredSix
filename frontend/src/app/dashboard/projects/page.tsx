@@ -397,13 +397,13 @@ export default function ProjectsPage() {
               </Button>
             )}
             {allTags.map(tag => (
-              <Badge
-                key={tag}
-                className={`cursor-pointer hover:bg-primary/20 ${selectedTag === tag ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}
-                onClick={() => handleTagClick(tag)}
-              >
-                {tag}
-              </Badge>
+                <Badge
+                  key={tag}
+                  className={`cursor-pointer ${selectedTag === tag ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}
+                  onClick={() => handleTagClick(tag)}
+                >
+                  {tag}
+                </Badge>
             ))}
           </div>
         )}
@@ -428,7 +428,7 @@ export default function ProjectsPage() {
                   <div key={project._id} className="flex w-full">
                     {/* Number and Controls Section */}
                     <div className="flex-none rounded-l-lg border-t border-l border-b bg-card p-4 shadow-sm flex flex-col items-center justify-center min-w-[80px]">
-                      <div className={`text-xl font-bold text-center w-8 h-8 rounded-full flex items-center justify-center ${project.isSacred ? 'bg-amber-100 text-amber-700' : 'bg-muted'}`}>
+                      <div className={`text-xl font-bold text-center w-8 h-8 rounded-full flex items-center justify-center ${project.isSacred ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-400 dark:ring-amber-500' : 'bg-muted'}`}>
                         {index + 1}
                       </div>
                       <div className="flex space-x-1 mt-2">
@@ -459,12 +459,6 @@ export default function ProjectsPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
                             <h3 className="font-medium">{project.name}</h3>
-                            {project.isSacred && (
-                              <Badge variant="secondary" className="ml-2 flex items-center gap-1 bg-amber-100 text-amber-700" title="Sacred Project">
-                                <Flame className="h-3 w-3" />
-                                Sacred
-                              </Badge>
-                            )}
                             {project.collaborators && project.collaborators.length > 0 && (
                               <Badge variant="outline" className="ml-2 flex items-center gap-1" title="Shared with others">
                                 <Users className="h-3 w-3" />
@@ -555,7 +549,7 @@ export default function ProjectsPage() {
                             {project.tags.map((tag, tagIndex) => (
                               <Badge
                                 key={tagIndex}
-                                className={`cursor-pointer hover:bg-primary/20 ${selectedTag === tag ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}
+                                className={`cursor-pointer ${selectedTag === tag ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}
                                 onClick={() => handleTagClick(tag)}
                               >
                                 {tag}

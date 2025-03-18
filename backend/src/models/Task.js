@@ -1,5 +1,27 @@
 const mongoose = require('mongoose');
 
+// Define the LogEntry schema
+const LogEntrySchema = new mongoose.Schema({
+  content: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  userName: {
+    type: String,
+    trim: true
+  }
+});
+
 const TaskSchema = new mongoose.Schema({
   projectId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -56,6 +78,7 @@ const TaskSchema = new mongoose.Schema({
   completedAt: {
     type: Date
   },
+  logs: [LogEntrySchema], // Array of log entries
   createdAt: {
     type: Date,
     default: Date.now
