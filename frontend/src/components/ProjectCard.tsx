@@ -58,6 +58,8 @@ export default function ProjectCard({
   const [editingProject, setEditingProject] = useState<Project | null>(null)
   const [sacredProjectsCount, setSacredProjectsCount] = useState<number>(0)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [taskLogsCount, setTaskLogsCount] = useState<number>(0)
+  const [isLoadingLogs, setIsLoadingLogs] = useState(false)
 
   useEffect(() => {
     // Fetch the count of sacred projects when the dialog is opened
@@ -65,6 +67,43 @@ export default function ProjectCard({
       fetchSacredProjectsCount()
     }
   }, [isDialogOpen])
+
+  // Fetch task logs count when component mounts
+  useEffect(() => {
+    fetchTaskLogsCount()
+  }, [project._id])
+
+  const fetchTaskLogsCount = async () => {
+    if (!project._id) return
+    
+    setIsLoadingLogs(true)
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) return
+
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+
+      // First, get all tasks for this project
+      const tasksResponse = await axios.get(apiEndpoint(`tasks/project/${project._id}`), config)
+      const tasks = tasksResponse.data
+      
+      // Then, get logs for each task and count them
+      let totalLogs = 0
+      
+      for (const task of tasks) {
+        const logsResponse = await axios.get(apiEndpoint(`tasks/${task._id}/logs`), config)
+        totalLogs += logsResponse.data.length
+      }
+      
+      setTaskLogsCount(totalLogs)
+    } catch (error) {
+      console.error("Error fetching task logs count:", error)
+    } finally {
+      setIsLoadingLogs(false)
+    }
+  }
 
   const fetchSacredProjectsCount = async () => {
     try {
@@ -108,17 +147,14 @@ export default function ProjectCard({
   }
 
   return (
-    <div key={project._id} className="rounded-lg border bg-card p-4 shadow-sm">
+    <div 
+      key={project._id} 
+      className="rounded-lg border bg-card p-4 shadow-sm"
+    >
       <div className="flex items-start justify-between">
         <div>
           <div className="flex items-center">
-            <h3 className="font-medium">{project.name}</h3>
-            {project.isSacred && (
-              <Badge variant="secondary" className="ml-2 flex items-center gap-1 bg-amber-100 text-amber-700" title="Sacred Project">
-                <Flame className="h-3 w-3" />
-                Sacred
-              </Badge>
-            )}
+            <h3 className={`font-medium ${project.isSacred ? 'text-amber-700 dark:text-amber-500' : ''}`}>{project.name}</h3>
             {project.collaborators && project.collaborators.length > 0 && (
               <Badge variant="outline" className="ml-2 flex items-center gap-1" title="Shared with others">
                 <Users className="h-3 w-3" />
@@ -227,8 +263,18 @@ export default function ProjectCard({
         </div>
       </div>
       <div className="mt-4 flex gap-2">
-        <Button variant="outline" size="sm" className="flex-1" asChild>
-          <a href={`/dashboard/projects/${project._id}`}>View Tasks</a>
+        <Button variant="outline" size="sm" className="flex-1 relative" asChild>
+          <a href={`/dashboard/projects/${project._id}`}>
+            View Tasks
+            {taskLogsCount > 0 && (
+              <span className="ml-1 bg-gray-600 text-white text-xs rounded-full px-1.5 py-0.5 inline-flex items-center justify-center">
+                {taskLogsCount}
+              </span>
+            )}
+            {isLoadingLogs && (
+              <span className="ml-1 animate-pulse">...</span>
+            )}
+          </a>
         </Button>
         {!project.isArchived && user && (
           <ProjectSharingModal

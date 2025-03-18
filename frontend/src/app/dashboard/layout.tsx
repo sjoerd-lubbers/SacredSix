@@ -25,6 +25,7 @@ import { useTheme } from "next-themes"
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { Avatar } from "@/components/ui/avatar"
+import { EnvironmentIndicator } from "@/components/EnvironmentIndicator"
 
 export default function DashboardLayout({
   children,
@@ -114,11 +115,13 @@ export default function DashboardLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
+      {/* No environment ribbon - using app-name indicator only */}
+      
       {/* Mobile Header */}
       <header className="sticky top-0 z-40 border-b bg-background py-4 md:hidden">
         <div className="container flex items-center justify-between">
           <Link href="/dashboard" className="flex items-center space-x-2">
-            <span className="text-xl font-bold">Sacred Six</span>
+            <EnvironmentIndicator variant="app-name" />
           </Link>
           <div className="flex items-center space-x-2">
             <Avatar name={user.name} size="sm" />
@@ -139,7 +142,7 @@ export default function DashboardLayout({
           <div className="flex flex-col h-full">
             <div className="border-b p-4">
               <Link href="/dashboard" className="flex items-center space-x-2">
-                <span className="text-xl font-bold">Sacred Six</span>
+                <EnvironmentIndicator variant="app-name" />
               </Link>
             </div>
             <nav className="flex-1 space-y-6 p-4 overflow-y-auto">

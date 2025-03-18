@@ -1,8 +1,11 @@
 "use client"
 
-import { useState } from "react"
-import { Pencil, Trash2, CheckCircle2, Circle, Clock } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Pencil, Trash2, CheckCircle2, Circle, Clock, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { TaskLogDialog } from "@/components/TaskLogDialog"
+import axios from "axios"
+import { apiEndpoint } from "@/config"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +45,35 @@ interface TaskItemProps {
 }
 
 export function TaskItem({ task, onStatusChange, onEdit, onDelete, setEditDialogOpen }: TaskItemProps) {
+  const [logs, setLogs] = useState<any[]>([]);
+  const [isLoadingLogs, setIsLoadingLogs] = useState(false);
+
+  // Fetch logs when component mounts
+  useEffect(() => {
+    const fetchLogs = async () => {
+      if (!task._id) return;
+      
+      setIsLoadingLogs(true);
+      try {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const config = {
+          headers: { Authorization: `Bearer ${token}` }
+        };
+
+        const response = await axios.get(apiEndpoint(`tasks/${task._id}/logs`), config);
+        setLogs(response.data);
+      } catch (error) {
+        console.error("Error fetching logs:", error);
+      } finally {
+        setIsLoadingLogs(false);
+      }
+    };
+
+    fetchLogs();
+  }, [task._id]);
+
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "done":
@@ -116,6 +148,40 @@ export function TaskItem({ task, onStatusChange, onEdit, onDelete, setEditDialog
           </div>
         </div>
         <div className="flex space-x-2">
+          {/* Task Logs Button */}
+          <TaskLogDialog 
+            task={task} 
+            onLogAdded={() => {
+              // Update the task logs without closing the dialog
+              // by updating only the specific task's logs
+              const token = localStorage.getItem("token")
+              if (!token) return
+
+              const config = {
+                headers: { Authorization: `Bearer ${token}` }
+              }
+
+              // Fetch only this task's logs to update them
+              axios.get(apiEndpoint(`tasks/${task._id}/logs`), config)
+                .then(response => {
+                  setLogs(response.data)
+                })
+                .catch(error => {
+                  console.error("Error updating task logs:", error)
+                })
+            }}
+            trigger={
+              <Button variant="ghost" size="icon" className="relative">
+                <MessageSquare className="h-4 w-4" />
+                {logs.length > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-gray-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {logs.length}
+                  </span>
+                )}
+              </Button>
+            }
+          />
+          
           {/* Edit Task Button */}
           <Dialog onOpenChange={setEditDialogOpen}>
             <DialogTrigger asChild>
