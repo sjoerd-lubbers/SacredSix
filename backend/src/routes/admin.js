@@ -5,6 +5,7 @@ const Project = require('../models/Project');
 const Task = require('../models/Task');
 const Reflection = require('../models/Reflection');
 const DailyCompletion = require('../models/DailyCompletion');
+const ActivityLog = require('../models/ActivityLog');
 
 const router = express.Router();
 
@@ -294,6 +295,65 @@ router.get('/stats', adminAuth, async (req, res) => {
     });
   } catch (error) {
     console.error(error.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// @route   GET /api/admin/activity-logs
+// @desc    Get authentication activity logs (admin only)
+// @access  Admin
+router.get('/activity-logs', adminAuth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = (page - 1) * limit;
+    
+    const type = req.query.type; // Optional filter by type
+    const email = req.query.email; // Optional filter by email
+    
+    // Build query
+    const query = {};
+    if (type) query.type = type;
+    if (email) query.email = { $regex: email, $options: 'i' }; // Case-insensitive search
+    
+    // Get total count for pagination
+    const total = await ActivityLog.countDocuments(query);
+    
+    // Get activity logs
+    const logs = await ActivityLog.find(query)
+      .sort({ createdAt: -1 }) // Newest first
+      .skip(skip)
+      .limit(limit)
+      .populate('userId', 'name email');
+    
+    // Format logs for response
+    const formattedLogs = logs.map(log => ({
+      id: log._id,
+      type: log.type,
+      timestamp: log.createdAt,
+      user: log.userId ? {
+        id: log.userId._id,
+        name: log.userId.name,
+        email: log.userId.email
+      } : null,
+      email: log.email,
+      ipAddress: log.ipAddress,
+      userAgent: log.userAgent,
+      details: log.details,
+      success: log.success
+    }));
+    
+    res.json({
+      logs: formattedLogs,
+      pagination: {
+        total,
+        page,
+        limit,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching activity logs:', error);
     res.status(500).send('Server error');
   }
 });

@@ -100,13 +100,14 @@ export default function SettingsPage() {
         headers: { Authorization: `Bearer ${token}` }
       }
 
-      // This endpoint is not implemented yet, but would be in a real app
-      // const response = await axios.put(apiEndpoint("auth/profile"), data, config)
+      // Send only the name to the backend (email cannot be changed)
+      const updateData = { name: data.name };
+      const response = await axios.put(apiEndpoint("auth/profile"), updateData, config);
       
-      // For now, just update the local storage
-      const updatedUser = { ...user, ...data }
-      localStorage.setItem("user", JSON.stringify(updatedUser))
-      setUser(updatedUser)
+      // Update local storage with the response from the server
+      const updatedUser = response.data;
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+      setUser(updatedUser);
 
       toast({
         title: "Profile updated",
@@ -204,8 +205,11 @@ export default function SettingsPage() {
                       <FormItem>
                         <FormLabel>Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="Your email" {...field} />
+                          <Input placeholder="Your email" {...field} disabled className="bg-gray-100 dark:bg-gray-800" />
                         </FormControl>
+                        <FormDescription>
+                          Email address cannot be changed. Contact support if you need to update your email.
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}

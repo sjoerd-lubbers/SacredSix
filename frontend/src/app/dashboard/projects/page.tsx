@@ -459,6 +459,12 @@ export default function ProjectsPage() {
                         <div className="flex items-center justify-between">
                           <div className="flex items-center">
                             <h3 className="font-medium">{project.name}</h3>
+                            {project.isSacred && (
+                              <Badge className="ml-2 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 flex items-center gap-1" title="Sacred Project">
+                                <Flame className="h-3 w-3" />
+                                Sacred
+                              </Badge>
+                            )}
                             {project.collaborators && project.collaborators.length > 0 && (
                               <Badge variant="outline" className="ml-2 flex items-center gap-1" title="Shared with others">
                                 <Users className="h-3 w-3" />
