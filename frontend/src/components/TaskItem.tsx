@@ -188,17 +188,16 @@ export function TaskItem({ task, onStatusChange, onEdit, onDelete, setEditDialog
           />
           
           {/* Edit Task Button */}
-          <Dialog onOpenChange={setEditDialogOpen}>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onEdit(task)}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-          </Dialog>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => {
+              onEdit(task);
+              setEditDialogOpen(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
           
           {/* Delete Task Alert Dialog */}
           <AlertDialog>

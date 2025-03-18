@@ -523,7 +523,7 @@ export default function ProjectTasksPage() {
           
           {/* Edit Task Dialog */}
           <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-            <DialogContent onInteractOutside={(e) => e.preventDefault()}>
+            <DialogContent>
               <DialogHeader>
                 <DialogTitle>Edit Task</DialogTitle>
                 <DialogDescription>
