@@ -16,7 +16,7 @@ services:
       # For container-to-container communication
       - FRONTEND_URL=http://frontend:3000
       # For external access
-      - CORS_ORIGIN=http://localhost:3000
+      - CORS_ORIGIN=http://localhost:3000,https://sacred6.ams8.nl
     networks:
       - app-network
 

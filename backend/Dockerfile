@@ -17,6 +17,7 @@ ENV PORT=5000
 ENV NODE_ENV=production
 ENV MONGODB_URI=mongodb://mongodb:27017/sacred6
 ENV FRONTEND_URL=http://frontend:3000
+ENV CORS_ORIGIN=http://localhost:3000,https://sacred6.ams8.nl
 
 # Start the application
 CMD ["npm", "start"]
