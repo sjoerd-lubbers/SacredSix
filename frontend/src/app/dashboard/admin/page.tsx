@@ -15,7 +15,11 @@ import {
   Folder,
   BookOpen,
   Activity,
-  Clock
+  Clock,
+  LogIn,
+  AlertTriangle,
+  UserCheck,
+  Filter
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -58,8 +62,13 @@ export default function AdminPage() {
     performance: { avgDailyCompletionRate: 0 }
   })
   const [activities, setActivities] = useState<any[]>([])
+  const [authLogs, setAuthLogs] = useState<any[]>([])
   const [isStatsLoading, setIsStatsLoading] = useState(true)
   const [isActivityLoading, setIsActivityLoading] = useState(true)
+  const [isAuthLogsLoading, setIsAuthLogsLoading] = useState(true)
+  const [authLogsPage, setAuthLogsPage] = useState(1)
+  const [authLogsTotal, setAuthLogsTotal] = useState(0)
+  const [authLogsFilter, setAuthLogsFilter] = useState({ type: '', email: '' })
 
   useEffect(() => {
     // Check if user is logged in and is admin
@@ -88,6 +97,7 @@ export default function AdminPage() {
       fetchUserStats()
       fetchSystemStats()
       fetchActivity()
+      fetchAuthLogs()
     } catch (error) {
       console.error("Failed to parse user data:", error)
       router.push("/dashboard")
@@ -164,6 +174,40 @@ export default function AdminPage() {
       })
     } finally {
       setIsActivityLoading(false)
+    }
+  }
+  
+  const fetchAuthLogs = async (page = 1, filters = { type: '', email: '' }) => {
+    setIsAuthLogsLoading(true)
+    try {
+      const token = localStorage.getItem("token")
+      
+      // Build query parameters
+      const params = new URLSearchParams({
+        page: page.toString(),
+        limit: '50'
+      })
+      
+      if (filters.type) params.append('type', filters.type)
+      if (filters.email) params.append('email', filters.email)
+      
+      const response = await axios.get(
+        apiEndpoint(`admin/activity-logs?${params.toString()}`), 
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+      
+      setAuthLogs(response.data.logs)
+      setAuthLogsTotal(response.data.pagination.total)
+      setAuthLogsPage(page)
+    } catch (error) {
+      console.error("Error fetching auth logs:", error)
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Could not load authentication logs. Please try refreshing the page.",
+      })
+    } finally {
+      setIsAuthLogsLoading(false)
     }
   }
 
@@ -317,6 +361,7 @@ export default function AdminPage() {
         <TabsList>
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="activity">Activity Log</TabsTrigger>
+          <TabsTrigger value="auth-logs">Authentication Logs</TabsTrigger>
         </TabsList>
         <TabsContent value="users" className="space-y-4">
           <div className="flex items-center space-x-2">
@@ -494,6 +539,194 @@ export default function AdminPage() {
                     )}
                   </TableBody>
                 </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+        
+        <TabsContent value="auth-logs" className="space-y-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Authentication Logs</CardTitle>
+                <CardDescription>
+                  Login, registration, and authentication activity
+                </CardDescription>
+              </div>
+              <div className="flex space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => {
+                    setAuthLogsFilter({ type: '', email: '' })
+                    fetchAuthLogs(1, { type: '', email: '' })
+                  }}
+                  disabled={isAuthLogsLoading}
+                >
+                  <Filter className="mr-2 h-4 w-4" />
+                  Clear Filters
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => fetchAuthLogs(authLogsPage, authLogsFilter)}
+                  disabled={isAuthLogsLoading}
+                >
+                  <Activity className="mr-2 h-4 w-4" />
+                  Refresh
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2 mb-4">
+                <Button 
+                  variant={authLogsFilter.type === '' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => {
+                    const newFilter = { ...authLogsFilter, type: '' }
+                    setAuthLogsFilter(newFilter)
+                    fetchAuthLogs(1, newFilter)
+                  }}
+                >
+                  All
+                </Button>
+                <Button 
+                  variant={authLogsFilter.type === 'login' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => {
+                    const newFilter = { ...authLogsFilter, type: 'login' }
+                    setAuthLogsFilter(newFilter)
+                    fetchAuthLogs(1, newFilter)
+                  }}
+                >
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Successful Logins
+                </Button>
+                <Button 
+                  variant={authLogsFilter.type === 'login_failed' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => {
+                    const newFilter = { ...authLogsFilter, type: 'login_failed' }
+                    setAuthLogsFilter(newFilter)
+                    fetchAuthLogs(1, newFilter)
+                  }}
+                >
+                  <AlertTriangle className="mr-2 h-4 w-4" />
+                  Failed Logins
+                </Button>
+                <Button 
+                  variant={authLogsFilter.type === 'register' ? 'default' : 'outline'} 
+                  size="sm"
+                  onClick={() => {
+                    const newFilter = { ...authLogsFilter, type: 'register' }
+                    setAuthLogsFilter(newFilter)
+                    fetchAuthLogs(1, newFilter)
+                  }}
+                >
+                  <UserCheck className="mr-2 h-4 w-4" />
+                  Registrations
+                </Button>
+              </div>
+              
+              {isAuthLogsLoading ? (
+                <div className="flex justify-center py-8">Loading authentication logs...</div>
+              ) : (
+                <>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Time</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>User/Email</TableHead>
+                        <TableHead>IP Address</TableHead>
+                        <TableHead>Details</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {authLogs.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={6} className="text-center">
+                            No authentication logs found
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        authLogs.map((log) => (
+                          <TableRow key={log.id}>
+                            <TableCell>
+                              <div className="flex items-center">
+                                <Clock className="mr-2 h-4 w-4 text-muted-foreground" />
+                                <span>{formatDate(log.timestamp)}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                log.type === 'login' 
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" 
+                                  : log.type === 'login_failed'
+                                  ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                  : log.type === 'register'
+                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                  : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300"
+                              }`}>
+                                {log.type.replace('_', ' ')}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              {log.user ? (
+                                <div className="font-medium">{log.user.name} ({log.user.email})</div>
+                              ) : (
+                                <div>{log.email || 'Unknown'}</div>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {log.ipAddress}
+                            </TableCell>
+                            <TableCell>
+                              {log.details}
+                            </TableCell>
+                            <TableCell>
+                              <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                                log.success
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300" 
+                                  : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                              }`}>
+                                {log.success ? 'Success' : 'Failed'}
+                              </span>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                  
+                  {/* Pagination */}
+                  {authLogsTotal > 0 && (
+                    <div className="flex justify-between items-center mt-4">
+                      <div className="text-sm text-muted-foreground">
+                        Showing {authLogs.length} of {authLogsTotal} logs
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fetchAuthLogs(authLogsPage - 1, authLogsFilter)}
+                          disabled={authLogsPage === 1 || isAuthLogsLoading}
+                        >
+                          Previous
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => fetchAuthLogs(authLogsPage + 1, authLogsFilter)}
+                          disabled={authLogsPage * 50 >= authLogsTotal || isAuthLogsLoading}
+                        >
+                          Next
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
