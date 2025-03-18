@@ -35,6 +35,7 @@ interface Task {
   isRecurring?: boolean
   recurringDays?: string[]
   projectName?: string
+  logs?: any[]
 }
 
 interface Project {
@@ -634,10 +635,16 @@ export default function TodayPage() {
                           {task.status === "done" && <CheckCircle2 className="h-4 w-4 ml-2 text-green-500" />}
                         </label>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
-                      <span className="text-xs text-muted-foreground">Project: {task.projectName}</span>
-                      <span className={`text-xs ${getPriorityColor(task.priority)}`}>
-                        Priority: {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                      <span className="text-xs text-muted-foreground">
+                        Project: <a href={`/dashboard/projects/${task.projectId}`} className="text-primary hover:underline">{task.projectName}</a>
                       </span>
+                      <Badge className={`${
+                        task.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 
+                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' : 
+                        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                      }`}>
+                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+                      </Badge>
                           {task.dueDate && (
                             <span className={`text-xs ${new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? "text-red-600 dark:text-red-400 font-medium" : "text-muted-foreground"}`}>
                               Due: {new Date(task.dueDate).toLocaleDateString()}
@@ -703,10 +710,16 @@ export default function TodayPage() {
                           {task.status === "done" && <CheckCircle2 className="h-4 w-4 ml-2 text-green-500" />}
                           </label>
                           <div className="flex flex-wrap items-center gap-2 mt-1">
-                            <span className="text-xs text-muted-foreground">Project: {task.projectName}</span>
-                            <span className={`text-xs ${getPriorityColor(task.priority)}`}>
-                              Priority: {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                            <span className="text-xs text-muted-foreground">
+                              Project: <a href={`/dashboard/projects/${task.projectId}`} className="text-primary hover:underline">{task.projectName}</a>
                             </span>
+                      <Badge className={`${
+                        task.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 
+                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' : 
+                        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                      }`}>
+                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+                      </Badge>
                             {task.dueDate && (
                               <span className="text-xs text-red-600 dark:text-red-400 font-medium">
                                 Due: {new Date(task.dueDate).toLocaleDateString()} (Overdue)
@@ -760,10 +773,16 @@ export default function TodayPage() {
                           {task.status === "done" && <CheckCircle2 className="h-4 w-4 ml-2 text-green-500" />}
                         </label>
                         <div className="flex flex-wrap items-center gap-2 mt-1">
-                          <span className="text-xs text-muted-foreground">Project: {task.projectName}</span>
-                          <span className={`text-xs ${getPriorityColor(task.priority)}`}>
-                            Priority: {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                          <span className="text-xs text-muted-foreground">
+                            Project: <a href={`/dashboard/projects/${task.projectId}`} className="text-primary hover:underline">{task.projectName}</a>
                           </span>
+                      <Badge className={`${
+                        task.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 
+                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' : 
+                        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                      }`}>
+                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+                      </Badge>
                           {task.dueDate && (
                             <span className={`text-xs ${new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? "text-red-600 dark:text-red-400 font-medium" : "text-muted-foreground"}`}>
                               Due: {new Date(task.dueDate).toLocaleDateString()}
@@ -826,10 +845,16 @@ export default function TodayPage() {
                       <p className="mt-1 text-sm text-muted-foreground">{task.description}</p>
                     )}
                     <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className="text-xs text-muted-foreground">Project: {task.projectName}</span>
-                      <span className={`text-xs ${getPriorityColor(task.priority)}`}>
-                        Priority: {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                      <span className="text-xs text-muted-foreground">
+                        Project: <a href={`/dashboard/projects/${task.projectId}`} className="text-primary hover:underline">{task.projectName}</a>
                       </span>
+                      <Badge className={`${
+                        task.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 
+                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' : 
+                        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                      }`}>
+                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
+                      </Badge>
                       {task.dueDate && (
                         <span className={`text-xs ${new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? "text-red-600 dark:text-red-400 font-medium" : "text-muted-foreground"}`}>
                           Due: {new Date(task.dueDate).toLocaleDateString()}

@@ -397,13 +397,13 @@ export default function ProjectsPage() {
               </Button>
             )}
             {allTags.map(tag => (
-              <Badge
-                key={tag}
-                className={`cursor-pointer hover:bg-primary/20 ${selectedTag === tag ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}
-                onClick={() => handleTagClick(tag)}
-              >
-                {tag}
-              </Badge>
+                <Badge
+                  key={tag}
+                  className={`cursor-pointer ${selectedTag === tag ? 'bg-primary text-primary-foreground' : 'bg-primary/10 text-primary'}`}
+                  onClick={() => handleTagClick(tag)}
+                >
+                  {tag}
+                </Badge>
             ))}
           </div>
         )}
