@@ -13,11 +13,6 @@ export function EnvironmentIndicator({
 }: EnvironmentIndicatorProps) {
   const environment = getEnvironment()
   
-  // Don't show anything in production unless explicitly requested
-  if (environment === 'production' && !showInProduction) {
-    return null
-  }
-  
   const { name, color, textColor, shortName } = ENVIRONMENT_DISPLAY[environment]
   
   // Different display variants
@@ -26,9 +21,12 @@ export function EnvironmentIndicator({
       return (
         <span className="flex items-center">
           Sacred Six
-          <span className={`ml-2 px-2 py-0.5 rounded-md text-xs font-medium ${color} ${textColor}`}>
-            {shortName}
-          </span>
+          {/* Only show environment badge if not in production or showInProduction is true */}
+          {(environment !== 'production' || showInProduction) && (
+            <span className={`ml-2 px-2 py-0.5 rounded-md text-xs font-medium ${color} ${textColor}`}>
+              {shortName}
+            </span>
+          )}
         </span>
       )
       

@@ -898,9 +898,12 @@ export default function TodayPage() {
                       // Fetch only this task's data to update it
                       axios.get(apiEndpoint(`tasks/${task._id}`), config)
                         .then(response => {
-                          // Update this task in the todayTasks array
+                          // Update this task in the todayTasks array, preserving the projectName
                           setTodayTasks(prev => 
-                            prev.map(t => t._id === task._id ? response.data : t)
+                            prev.map(t => t._id === task._id ? {
+                              ...response.data,
+                              projectName: t.projectName // Preserve the project name
+                            } : t)
                           )
                         })
                         .catch(error => {

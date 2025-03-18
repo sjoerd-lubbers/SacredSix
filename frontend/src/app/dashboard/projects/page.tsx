@@ -423,7 +423,7 @@ export default function ProjectsPage() {
           </TabsList>
           <TabsContent value="active" className="mt-6">
             {filteredActiveProjects.length > 0 ? (
-              <div className="flex flex-col gap-4 min-h-[200px] p-4 border border-dashed border-gray-300 rounded-lg">
+              <div className="flex flex-col gap-4 min-h-[200px]">
                 {filteredActiveProjects.map((project, index) => (
                   <div key={project._id} className="flex w-full">
                     {/* Number and Controls Section */}
