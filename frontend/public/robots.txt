@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sacred-six.com/sitemap.xml
+Sitemap: https://www.sacred6.com/sitemap.xml

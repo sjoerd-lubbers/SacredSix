@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://sacred-six.com/</loc>
+    <loc>https://www.sacred6.com/</loc>
     <lastmod>2025-03-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://sacred-six.com/login</loc>
+    <loc>https://www.sacred6.com/login</loc>
     <lastmod>2025-03-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sacred-six.com/register</loc>
+    <loc>https://www.sacred6.com/register</loc>
     <lastmod>2025-03-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://sacred-six.com/privacy</loc>
+    <loc>https://www.sacred6.com/privacy</loc>
     <lastmod>2025-03-19</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>

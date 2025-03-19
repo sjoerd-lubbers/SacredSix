@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     locale: 'en_US',
-    url: 'https://sacred-six.com',
+    url: 'https://www.sacred6.com',
     title: `${APP_NAME} - Focus on What Truly Matters`,
     description: `${APP_NAME} is a focused productivity system that ensures you only work on 6 core projects that truly matter, helping you regain control of your time and energy.`,
     siteName: APP_NAME,
@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="canonical" href="https://sacred-six.com" />
+        <link rel="canonical" href="https://www.sacred6.com" />
       </head>
       <body className={inter.className}>
         <ThemeProvider
