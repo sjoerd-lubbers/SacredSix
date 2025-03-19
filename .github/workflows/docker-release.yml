@@ -50,7 +50,11 @@ jobs:
     - name: Build Frontend Docker Image
       working-directory: ./frontend
       run: |
-        docker build --build-arg NEXT_PUBLIC_API_URL=https://sacred6-api.ams8.nl -t ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }} .
+        docker build \
+        --build-arg NEXT_PUBLIC_API_URL=https://sacred6-api.ams8.nl \
+        --build-arg NEXT_PUBLIC_APP_NAME="Sacred 6" \
+        --build-arg NEXT_PUBLIC_GA_MEASUREMENT_ID="G-RZVGQBJ2NF" \
+        -t ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }} .
         docker tag ${{ secrets.REGISTRY_URL }}/sacred6-frontend:${{ github.ref_name || 'manual' }} ${{ secrets.REGISTRY_URL }}/sacred6-frontend:latest
 
     # Stap 4: Push de Docker-image voor de frontend

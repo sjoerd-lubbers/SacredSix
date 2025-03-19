@@ -1,6 +1,6 @@
 "use client"
 
-import { getEnvironment, ENVIRONMENT_DISPLAY } from "@/config"
+import { getEnvironment, ENVIRONMENT_DISPLAY, APP_NAME } from "@/config"
 
 interface EnvironmentIndicatorProps {
   variant?: 'badge' | 'app-name'
@@ -20,7 +20,7 @@ export function EnvironmentIndicator({
     case 'app-name':
       return (
         <span className="flex items-center">
-          Sacred Six
+          {APP_NAME}
           {/* Only show environment badge if not in production or showInProduction is true */}
           {(environment !== 'production' || showInProduction) && (
             <span className={`ml-2 px-2 py-0.5 rounded-md text-xs font-medium ${color} ${textColor}`}>
