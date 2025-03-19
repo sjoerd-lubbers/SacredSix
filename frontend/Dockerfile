@@ -19,7 +19,9 @@ RUN mkdir -p ./public
 
 # Set environment variables (at build time)
 ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_APP_NAME
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME:-"Sacred Six"}
 
 # Set environment variables
 ENV NODE_ENV=production
@@ -32,8 +34,9 @@ RUN npm run build
 EXPOSE 3000
 ENV PORT=3000
 
-# Environment variables for API URL
+# Environment variables for runtime
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+ENV NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME:-"Sacred Six"}
 
 # Start the server
 CMD ["npm", "start"]

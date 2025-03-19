@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+import { APP_NAME } from '@/config'
 
 export default function Home() {
   return (
@@ -10,17 +11,17 @@ export default function Home() {
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 md:gap-16">
             <div className="flex flex-col justify-center space-y-4">
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
-                Meer Focus Krijgen met Sacred Six
+                Focus on What Truly Matters with {APP_NAME}
               </h1>
               <p className="text-xl">
-                Voel jij je ook overweldigd door eindeloze takenlijsten? Sacred Six is de productiviteitsmethode die je helpt om weer controle te krijgen over je tijd en energie.
+                A focused productivity system that ensures you only work on 6 core projects that truly matter, helping you regain control of your time and energy.
               </p>
               <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
-                <Button asChild size="lg" variant="default">
-                  <Link href="/register">Start Nu Gratis</Link>
+                <Button asChild size="lg" variant="secondary">
+                  <Link href="/register">Get Started</Link>
                 </Button>
-                <Button asChild size="lg" variant={"secondary"}>
-                  <Link href="/login">Inloggen</Link>
+                <Button asChild size="lg" variant="outline" className="bg-white/20 text-white hover:bg-white/30 border-white">
+                  <Link href="/login">Sign In</Link>
                 </Button>
               </div>
             </div>
@@ -29,7 +30,8 @@ export default function Home() {
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="text-center">
                     <div className="text-6xl font-bold">6</div>
-                    <div className="mt-2 text-lg">Taken per dag</div>
+                    <div className="mt-2 text-lg">Projects</div>
+                    <div className="mt-1 text-sm">4-6 Tasks Daily</div>
                   </div>
                 </div>
               </div>
@@ -38,185 +40,222 @@ export default function Home() {
         </div>
       </header>
 
-      {/* Problem-Solution Section */}
+      {/* Core Method Section */}
       <section className="py-16 bg-secondary/30">
         <div className="container mx-auto px-4">
-          <h2 className="mb-8 text-center text-3xl font-bold">Het Probleem van Moderne Productiviteit</h2>
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
-            <div className="space-y-4">
-              <h3 className="text-2xl font-semibold">Je kent het vast wel...</h3>
-              <p className="text-lg text-muted-foreground">
-                Je begint je dag vol goede moed, maar raakt al snel overweldigd door eindeloze notificaties, vergaderingen en een groeiende takenlijst. Aan het eind van de dag vraag je je af: "Wat heb ik eigenlijk bereikt?"
-              </p>
-              <p className="text-lg text-muted-foreground">
-                Studies tonen aan dat de gemiddelde professional:
-              </p>
-              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li>Elke 11 minuten wordt onderbroken</li>
-                <li>23% van de tijd besteedt aan het zoeken naar informatie</li>
-                <li>Slechts 3 uur per dag echt productief is</li>
-              </ul>
-              <p className="text-lg font-medium">
-                Het resultaat? Stress, burnout en het gevoel dat je altijd achterloopt.
+          <h2 className="mb-8 text-center text-3xl font-bold">The Core of the {APP_NAME} Method</h2>
+          <div className="max-w-3xl mx-auto">
+            <div className="mb-8 text-center">
+              <p className="text-xl font-medium mb-6">
+                <span className="text-primary">✅</span> {APP_NAME} is a focused productivity system that ensures you only work on 6 core projects that truly matter.
               </p>
             </div>
-            <div className="space-y-4">
-              <h3 className="text-2xl font-semibold">De Sacred Six Oplossing</h3>
-              <p className="text-lg text-muted-foreground">
-                Sacred Six is gebaseerd op een eenvoudig maar krachtig principe: focus op maximaal zes belangrijke taken per dag. Deze timemanagement methode is ontwikkeld na jaren van onderzoek naar hoe topprestateerders hun tijd indelen.
-              </p>
-              <p className="text-lg text-muted-foreground">
-                Door je aandacht te richten op een beperkt aantal taken:
-              </p>
-              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
-                <li>Verminder je cognitieve belasting</li>
-                <li>Maak je betere beslissingen over prioriteiten</li>
-                <li>Ervaar je meer voldoening door voltooide taken</li>
-                <li>Creëer je een duidelijk pad naar je langetermijndoelen</li>
-              </ul>
-              <p className="text-lg font-medium">
-                Sacred Six combineert deze filosofie met AI om je te helpen de juiste zes taken te kiezen voor maximale impact.
+            
+            <h3 className="text-2xl font-semibold mb-4 text-center">
+              <span className="text-primary">📌</span> How Does It Work?
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="rounded-lg border p-6 shadow-sm">
+                <h4 className="text-xl font-medium mb-2 flex items-center">
+                  <span className="text-primary mr-2">1️⃣</span> Choose Your 6 Sacred Projects
+                </h4>
+                <p className="text-muted-foreground">
+                  These are the key goals in your life or work that deserve your focused attention and energy.
+                </p>
+              </div>
+              
+              <div className="rounded-lg border p-6 shadow-sm">
+                <h4 className="text-xl font-medium mb-2 flex items-center">
+                  <span className="text-primary mr-2">2️⃣</span> Work on 4-6 Tasks Daily
+                </h4>
+                <p className="text-muted-foreground">
+                  Every day, complete a maximum of 6 actions that contribute to these projects for maximum impact.
+                </p>
+              </div>
+              
+              <div className="rounded-lg border p-6 shadow-sm">
+                <h4 className="text-xl font-medium mb-2 flex items-center">
+                  <span className="text-primary mr-2">3️⃣</span> Eliminate Distractions
+                </h4>
+                <p className="text-muted-foreground">
+                  Anything that doesn't align with your Sacred Six projects is ignored to maintain your focus.
+                </p>
+              </div>
+              
+              <div className="rounded-lg border p-6 shadow-sm">
+                <h4 className="text-xl font-medium mb-2 flex items-center">
+                  <span className="text-primary mr-2">4️⃣</span> Consistency is Key
+                </h4>
+                <p className="text-muted-foreground">
+                  Small daily steps lead to exponential growth and meaningful progress over time.
+                </p>
+              </div>
+              
+              <div className="rounded-lg border p-6 shadow-sm">
+                <h4 className="text-xl font-medium mb-2 flex items-center">
+                  <span className="text-primary mr-2">5️⃣</span> Reflect & Adjust
+                </h4>
+                <p className="text-muted-foreground">
+                  Regularly evaluate your progress and refine your focus to stay on track with your goals.
+                </p>
+              </div>
+              
+              <div className="rounded-lg border p-6 shadow-sm">
+                <h4 className="text-xl font-medium mb-2 flex items-center">
+                  <span className="text-primary mr-2">6️⃣</span> Stay Mission-Driven
+                </h4>
+                <p className="text-muted-foreground">
+                  {APP_NAME} is more than productivity; it's about living with intention and purpose.
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-8 text-center">
+              <p className="text-xl font-medium">
+                <span className="text-primary">🎯</span> Result: More focus, less chaos, and structured growth in both work and life. <span className="text-primary">🚀</span>
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Features Section */}
+      {/* How It Works Section */}
       <section className="py-16">
         <div className="container mx-auto px-4">
-          <h2 className="mb-12 text-center text-3xl font-bold">Hoe Sacred Six Werkt</h2>
+          <h2 className="mb-12 text-center text-3xl font-bold">How {APP_NAME} Works</h2>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
             <div className="rounded-lg border p-6 shadow-sm">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 1
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Projecten & Taken Creëren</h3>
+              <h3 className="mb-2 text-xl font-semibold">Create Your Sacred Projects</h3>
               <p className="text-muted-foreground">
-                Organiseer je werk in projecten en verdeel ze in behapbare taken. Onze AI helpt je bij het formuleren van effectieve taken voor optimale resultaten.
+                Define your 6 most important projects and break them down into manageable tasks. Our AI helps you formulate effective tasks for optimal results.
               </p>
             </div>
             <div className="rounded-lg border p-6 shadow-sm">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 2
               </div>
-              <h3 className="mb-2 text-xl font-semibold">AI Selecteert Je Dagelijkse Zes</h3>
+              <h3 className="mb-2 text-xl font-semibold">Focus on Daily Tasks</h3>
               <p className="text-muted-foreground">
-                Onze intelligente algoritmes analyseren je taken en selecteren de zes meest impactvolle voor vandaag, rekening houdend met deadlines, prioriteiten en je energieniveau.
+                Select 4-6 high-impact tasks each day that align with your sacred projects. Our AI can help prioritize based on deadlines, importance, and your energy levels.
               </p>
             </div>
             <div className="rounded-lg border p-6 shadow-sm">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 3
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Reflecteren & Verbeteren</h3>
+              <h3 className="mb-2 text-xl font-semibold">Reflect & Improve</h3>
               <p className="text-muted-foreground">
-                Evalueer je voortgang en ontvang AI-gestuurde inzichten om je productiviteit continu te verbeteren. Leer van patronen en ontwikkel een steeds effectievere werkstijl.
+                Regularly review your progress, celebrate wins, and adjust your approach. Our tools help you track patterns and continuously refine your productivity system.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="bg-secondary py-16">
+      {/* Benefits Section */}
+      <section className="py-16 bg-gradient-to-b from-background to-secondary/10">
         <div className="container mx-auto px-4">
-          <h2 className="mb-12 text-center text-3xl font-bold">Ervaringen van Gebruikers</h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
-            <div className="rounded-lg bg-background p-6 shadow-sm">
-              <p className="mb-4 italic text-muted-foreground">
-                "Voorheen was ik constant afgeleid en had ik het gevoel dat ik nooit genoeg deed. Met Sacred Six heb ik geleerd om me te concentreren op wat echt belangrijk is. Mijn productiviteit is verdubbeld en mijn stressniveau is aanzienlijk gedaald."
-              </p>
-              <div className="flex items-center">
-                <div className="h-10 w-10 rounded-full bg-primary"></div>
-                <div className="ml-4">
-                  <div className="font-semibold">Sarah Johnson</div>
-                  <div className="text-sm text-muted-foreground">Product Manager</div>
-                </div>
+          <h2 className="mb-12 text-center text-3xl font-bold">Why Choose {APP_NAME}?</h2>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="rounded-lg border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 20v-6M6 20V10M18 20V4"/>
+                </svg>
               </div>
-            </div>
-            <div className="rounded-lg bg-background p-6 shadow-sm">
-              <p className="mb-4 italic text-muted-foreground">
-                "Als ondernemer was timemanagement altijd mijn grootste uitdaging. Sacred Six heeft me geholpen om meer focus te krijgen en betere beslissingen te nemen over waar ik mijn tijd aan besteed. De AI-aanbevelingen zijn verrassend accuraat en helpen me om consistent vooruitgang te boeken."
+              <h3 className="mb-2 text-xl font-semibold">Increased Focus</h3>
+              <p className="text-muted-foreground">
+                By limiting your attention to just 6 core projects, you eliminate the overwhelm of endless task lists and gain clarity on what truly matters.
               </p>
-              <div className="flex items-center">
-                <div className="h-10 w-10 rounded-full bg-primary"></div>
-                <div className="ml-4">
-                  <div className="font-semibold">Michael Chen</div>
-                  <div className="text-sm text-muted-foreground">Software Ondernemer</div>
-                </div>
+            </div>
+            <div className="rounded-lg border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                  <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
               </div>
+              <h3 className="mb-2 text-xl font-semibold">Consistent Progress</h3>
+              <p className="text-muted-foreground">
+                Small daily steps lead to exponential growth. The {APP_NAME} method ensures you make meaningful progress on your most important goals every day.
+              </p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Results Section */}
-      <section className="py-16">
-        <div className="container mx-auto px-4">
-          <h2 className="mb-12 text-center text-3xl font-bold">Resultaten die Je Kunt Verwachten</h2>
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">42%</div>
-              <p className="text-muted-foreground">Toename in voltooide belangrijke taken</p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">67%</div>
-              <p className="text-muted-foreground">Gebruikers rapporteren minder werkstress</p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">89%</div>
-              <p className="text-muted-foreground">Meer voldoening aan het eind van de werkdag</p>
-            </div>
-            <div className="text-center">
-              <div className="text-4xl font-bold text-primary mb-2">3.5x</div>
-              <p className="text-muted-foreground">Snellere voortgang richting langetermijndoelen</p>
+            <div className="rounded-lg border bg-card p-6 shadow-sm hover:shadow-md transition-shadow">
+              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14Z"/>
+                  <path d="M7 22V11"/>
+                </svg>
+              </div>
+              <h3 className="mb-2 text-xl font-semibold">Reduced Stress</h3>
+              <p className="text-muted-foreground">
+                Eliminate the anxiety of trying to do everything at once. With a clear system for prioritization, you'll feel more in control and less overwhelmed.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="bg-primary py-16 text-primary-foreground">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="mb-4 text-3xl font-bold">Klaar om Meer Focus te Krijgen?</h2>
-          <p className="mb-8 text-xl max-w-3xl mx-auto">
-            Sluit je aan bij duizenden professionals die hun productiviteit hebben getransformeerd met Sacred Six. Begin vandaag nog en ervaar het verschil van een gerichte productiviteitsmethode.
-          </p>
-          <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0 justify-center">
-            <Button asChild size="lg" variant="secondary">
-              <Link href="/register">Start Gratis Proefperiode</Link>
-            </Button>
-            <Button asChild size="lg" variant="default">
-              <Link href="/about">Ontdek Meer</Link>
-            </Button>
+      <section className="py-16 bg-primary text-primary-foreground">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+            <div className="md:w-1/2">
+              <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Productivity?</h2>
+              <p className="text-xl mb-6">
+                Start focusing on what truly matters with the {APP_NAME} method. Create your account today and begin your journey to more intentional productivity.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button asChild size="lg" variant="secondary">
+                  <Link href="/register">Get Started</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="bg-white/20 text-white hover:bg-white/30 border-white">
+                  <Link href="/login">Sign In</Link>
+                </Button>
+              </div>
+            </div>
+            <div className="md:w-1/2 flex justify-center">
+              <div className="relative w-64 h-64 md:w-80 md:h-80">
+                <div className="absolute inset-0 bg-primary-foreground/10 rounded-full flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="text-7xl font-bold">6</div>
+                    <div className="mt-2 text-xl">Projects</div>
+                    <div className="mt-1 text-lg">Unlimited Focus</div>
+                  </div>
+                </div>
+                <div className="absolute -top-4 -right-4 w-16 h-16 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center text-xl font-bold">
+                  4-6
+                </div>
+                <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center text-xl font-bold">
+                  Daily
+                </div>
+              </div>
+            </div>
           </div>
-          <p className="mt-6 text-sm text-primary-foreground/70">
-            Geen creditcard nodig. Gratis proefperiode van 14 dagen.
-          </p>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t py-8">
+      <footer className="border-t py-8 bg-background">
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
             <div className="text-center md:text-left">
-              <div className="text-lg font-semibold">Sacred Six Productiviteitsmethode</div>
-              <div className="text-sm text-muted-foreground">© 2025 Alle rechten voorbehouden</div>
+              <div className="text-lg font-semibold">{APP_NAME} Productivity Method</div>
+              <div className="text-sm text-muted-foreground">© 2025 All rights reserved</div>
             </div>
-            <div className="flex space-x-4">
-              <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground">
-                Over Ons
+            <div className="flex space-x-6">
+              <Link href="/login" className="text-sm font-medium text-foreground hover:text-primary">
+                Login
               </Link>
-              <Link href="/blog" className="text-sm text-muted-foreground hover:text-foreground">
-                Blog
+              <Link href="/register" className="text-sm font-medium text-foreground hover:text-primary">
+                Register
               </Link>
-              <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground">
+              <Link href="/privacy" className="text-sm font-medium text-foreground hover:text-primary">
                 Privacy
-              </Link>
-              <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">
-                Voorwaarden
               </Link>
             </div>
           </div>

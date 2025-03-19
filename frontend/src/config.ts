@@ -5,8 +5,14 @@
  * Environment variables are accessed here to provide a single source of truth.
  */
 
+// Application name
+export const APP_NAME = process.env.NEXT_PUBLIC_APP_NAME || 'Sacred Six';
+
 // API configuration
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+// Analytics configuration
+export const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || '';
 
 // Environment detection
 export type Environment = 'development' | 'test' | 'production';

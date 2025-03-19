@@ -278,7 +278,7 @@ export default function ProjectTasksPage() {
         description: data.description,
         priority: data.priority,
         status: data.status,
-        dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
+        dueDate: data.dueDate && data.dueDate.trim() !== "" ? new Date(data.dueDate).toISOString() : null,
         estimatedTime: data.estimatedTime ? parseInt(data.estimatedTime) : undefined,
         isRecurring: data.isRecurring,
         recurringDays: data.recurringDays,

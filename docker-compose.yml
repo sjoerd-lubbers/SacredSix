@@ -31,6 +31,7 @@ services:
     environment:
       # For browser clients (must be the external URL)
       - NEXT_PUBLIC_API_URL=http://localhost:5000
+      - NEXT_PUBLIC_APP_NAME=Sacred Six
     networks:
       - app-network
 
