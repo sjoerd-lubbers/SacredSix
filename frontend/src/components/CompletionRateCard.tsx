@@ -5,7 +5,7 @@ import axios from "axios"
 import { CheckCircle, Calendar, BarChart, Zap, Target, AlertTriangle } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/components/ui/use-toast"
-import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts"
 import { apiEndpoint } from "@/config";
 
 interface CompletionStats {
@@ -155,11 +155,21 @@ export function CompletionRateCard() {
             <div className="h-[200px]">
               <ResponsiveContainer width="100%" height="100%">
                 <RechartsBarChart data={stats.chartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar name="Completion %" dataKey="completionPercentage" fill="#22c55e" />
+                  <XAxis 
+                    dataKey="date" 
+                    tickFormatter={(date) => {
+                      const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+                      const dateObj = new Date(date);
+                      return dayNames[dateObj.getDay()];
+                    }}
+                  />
+                  <YAxis 
+                    tickFormatter={(value) => `${value}%`}
+                    domain={[0, 100]}
+                    
+                  />
+                  <Tooltip formatter={(value) => [`${value}%`, 'Completion']} />
+                  <Bar name="Completion %" dataKey="completionPercentage" fill="#10b981" />
                 </RechartsBarChart>
               </ResponsiveContainer>
             </div>

@@ -29,9 +29,17 @@ const UserSchema = new mongoose.Schema({
     trim: true,
     default: ''
   },
+  missionLastValidated: {
+    type: Date,
+    default: null
+  },
   values: {
     type: [String],
     default: []
+  },
+  valuesLastValidated: {
+    type: Date,
+    default: null
   },
   alignment: {
     type: String,

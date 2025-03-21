@@ -485,13 +485,15 @@ export default function ProjectsPage() {
                     >
                       {/* Project Header */}
                       <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
-                        <div className="flex items-center space-x-3 overflow-hidden flex-1">
-                          <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
-                            project.isSacred 
-                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-800/50 dark:text-amber-300 ring-2 ring-amber-300 dark:ring-amber-700' 
-                              : 'bg-primary/10 text-primary dark:bg-primary/20'
-                          }`}>
-                            <span className="text-lg font-bold">{index + 1}</span>
+                        <div className="flex items-center space-x-3 overflow-hidden flex-1" style={{ paddingLeft: '2px' }}>
+                          <div className="flex-shrink-0" style={{ width: '40px', height: '40px' }}>
+                            <div className={`w-full h-full rounded-full flex items-center justify-center ${
+                              project.isSacred 
+                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-800/50 dark:text-amber-300 ring-2 ring-amber-300 dark:ring-amber-700' 
+                                : 'bg-primary/10 text-primary dark:bg-primary/20'
+                            }`} style={project.isSacred ? { paddingLeft: '2px' } : {}}>
+                              <span className="text-lg font-bold">{index + 1}</span>
+                            </div>
                           </div>
                           <div className="min-w-0 flex-1">
                             <h3 className="font-medium text-lg truncate" title={project.name}>{project.name}</h3>
