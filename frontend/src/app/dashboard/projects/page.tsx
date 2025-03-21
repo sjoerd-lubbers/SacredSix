@@ -1,10 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { Plus, Search, X, ArrowUp, ArrowDown, Pencil, Trash2, Archive, Users, Share, Flame } from "lucide-react"
+import axios from "axios"
+import { Plus, Search, X, ArrowUp, ArrowDown, Pencil, Trash2, Archive, Users, Share, Flame, ListTodo } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
+import { apiEndpoint } from "@/config"
 import { 
   Dialog, 
   DialogContent, 
@@ -57,12 +59,49 @@ export default function ProjectsPage() {
   const [sacredProjectsCount, setSacredProjectsCount] = useState<number>(0)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
+  const [tasks, setTasks] = useState<any[]>([])
+  const [projectTasksMap, setProjectTasksMap] = useState<Record<string, any[]>>({})
+  const [projectCompletionMap, setProjectCompletionMap] = useState<Record<string, number>>({})
 
   useEffect(() => {
     const initializeData = async () => {
       try {
         // Load archived projects when component mounts
         await fetchProjects(true)
+        
+        // Fetch tasks to calculate completion percentages
+        const token = localStorage.getItem("token")
+        if (!token) return
+        
+        const config = {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+        
+        // Fetch all tasks
+        const tasksResponse = await axios.get(apiEndpoint("tasks"), config)
+        const allTasks = tasksResponse.data
+        setTasks(allTasks)
+        
+        // Group tasks by project
+        const tasksByProject: Record<string, any[]> = {}
+        allTasks.forEach((task: any) => {
+          if (!tasksByProject[task.projectId]) {
+            tasksByProject[task.projectId] = []
+          }
+          tasksByProject[task.projectId].push(task)
+        })
+        setProjectTasksMap(tasksByProject)
+        
+        // Calculate completion percentages
+        const completionByProject: Record<string, number> = {}
+        Object.entries(tasksByProject).forEach(([projectId, projectTasks]) => {
+          const completedTasks = projectTasks.filter(task => task.status === "done").length
+          const completionPercentage = projectTasks.length > 0 
+            ? Math.round((completedTasks / projectTasks.length) * 100) 
+            : 0
+          completionByProject[projectId] = completionPercentage
+        })
+        setProjectCompletionMap(completionByProject)
       } catch (error) {
         console.error("Error initializing data:", error)
         toast({
@@ -337,7 +376,7 @@ export default function ProjectsPage() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold">Projects</h1>
+          <h1 className="text-3xl font-bold">My Projects</h1>
           <p className="text-muted-foreground">Manage your projects and tasks</p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -423,60 +462,114 @@ export default function ProjectsPage() {
           </TabsList>
           <TabsContent value="active" className="mt-6">
             {filteredActiveProjects.length > 0 ? (
-              <div className="flex flex-col gap-4 min-h-[200px]">
-                {filteredActiveProjects.map((project, index) => (
-                  <div key={project._id} className="flex w-full">
-                    {/* Number and Controls Section */}
-                    <div className="flex-none rounded-l-lg border-t border-l border-b bg-card p-4 shadow-sm flex flex-col items-center justify-center min-w-[80px]">
-                      <div className={`text-xl font-bold text-center w-8 h-8 rounded-full flex items-center justify-center ${project.isSacred ? 'bg-amber-100 text-amber-700 ring-2 ring-amber-400 dark:ring-amber-500' : 'bg-muted'}`}>
-                        {index + 1}
+              <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3 min-h-[200px]">
+                {filteredActiveProjects.map((project, index) => {
+                  // Get the tasks for this project
+                  const projectTasks = projectTasksMap[project._id] || [];
+                  
+                  // Use the actual task count
+                  const taskCount = projectTasks.length;
+                  
+                  // Use the actual completion percentage
+                  const completionPercentage = projectCompletionMap[project._id] || 0;
+                  
+                  // Determine card style based on sacred status
+                  const cardBg = project.isSacred 
+                    ? "bg-gradient-to-br from-amber-50 to-amber-100/50 dark:from-amber-900/20 dark:to-amber-800/10 border-amber-200 dark:border-amber-800/30" 
+                    : "bg-card";
+                  
+                  return (
+                    <div 
+                      key={project._id} 
+                      className={`rounded-lg border ${cardBg} shadow-sm transition-all duration-200 hover:shadow-md overflow-hidden`}
+                    >
+                      {/* Project Header */}
+                      <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
+                        <div className="flex items-center space-x-3 overflow-hidden flex-1">
+                          <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center ${
+                            project.isSacred 
+                              ? 'bg-amber-100 text-amber-700 dark:bg-amber-800/50 dark:text-amber-300 ring-2 ring-amber-300 dark:ring-amber-700' 
+                              : 'bg-primary/10 text-primary dark:bg-primary/20'
+                          }`}>
+                            <span className="text-lg font-bold">{index + 1}</span>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <h3 className="font-medium text-lg truncate" title={project.name}>{project.name}</h3>
+                            <div className="flex items-center mt-1">
+                              {project.isSacred && (
+                                <Badge className="bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 flex items-center gap-1" title="Sacred Project">
+                                  <Flame className="h-3 w-3" />
+                                  Sacred
+                                </Badge>
+                              )}
+                              {project.collaborators && project.collaborators.length > 0 && (
+                                <Badge variant="outline" className="ml-2 flex items-center gap-1" title="Shared with others">
+                                  <Users className="h-3 w-3" />
+                                  {project.collaborators.length}
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Reorder Controls */}
+                        <div className="flex space-x-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-full" 
+                            onClick={() => handleMoveProject(index, 'up')}
+                            disabled={index === 0 || isReordering}
+                          >
+                            <ArrowUp className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-full" 
+                            onClick={() => handleMoveProject(index, 'down')}
+                            disabled={index === filteredActiveProjects.length - 1 || isReordering}
+                          >
+                            <ArrowDown className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
-                      <div className="flex space-x-1 mt-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-6 w-6" 
-                          onClick={() => handleMoveProject(index, 'up')}
-                          disabled={index === 0 || isReordering}
-                        >
-                          <ArrowUp className="h-4 w-4" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-6 w-6" 
-                          onClick={() => handleMoveProject(index, 'down')}
-                          disabled={index === filteredActiveProjects.length - 1 || isReordering}
-                        >
-                          <ArrowDown className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {/* Project Details Section */}
-                    <div className="flex-1 rounded-r-lg border-t border-r border-b bg-card p-4 shadow-sm">
-                      <div className="flex flex-col space-y-4">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <h3 className="font-medium">{project.name}</h3>
-                            {project.isSacred && (
-                              <Badge className="ml-2 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300 flex items-center gap-1" title="Sacred Project">
-                                <Flame className="h-3 w-3" />
-                                Sacred
-                              </Badge>
-                            )}
-                            {project.collaborators && project.collaborators.length > 0 && (
-                              <Badge variant="outline" className="ml-2 flex items-center gap-1" title="Shared with others">
-                                <Users className="h-3 w-3" />
-                                {project.collaborators.length}
-                              </Badge>
-                            )}
+                      
+                      {/* Project Body */}
+                      <div className="p-4">
+                        {project.description && (
+                          <p className="text-sm text-muted-foreground mb-4">{project.description}</p>
+                        )}
+                        
+                        {/* Task Stats with Progress Bar */}
+                        <div className="mb-4">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span><span className="font-medium">{taskCount}</span> tasks</span>
+                            <span className="text-muted-foreground">
+                              {completionPercentage}% complete
+                            </span>
                           </div>
                           
-                          <div className="flex space-x-2">
+                          {/* Progress bar */}
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mb-3">
+                            <div 
+                              className={`h-1.5 rounded-full transition-all duration-500 ${
+                                project.isSacred 
+                                  ? "bg-amber-500 dark:bg-amber-600" 
+                                  : "bg-primary dark:bg-primary/80"
+                              }`}
+                              style={{ 
+                                width: `${completionPercentage}%` 
+                              }}
+                            ></div>
+                          </div>
+                          
+                          {/* Action Buttons */}
+                          <div className="flex space-x-1 justify-end">
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-800"
                               onClick={() => handleArchiveToggle(project._id, true)}
                               disabled={isArchiving}
                               title="Archive project"
@@ -497,6 +590,7 @@ export default function ProjectsPage() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
+                                  className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-800"
                                 >
                                   <Pencil className="h-4 w-4" />
                                 </Button>
@@ -523,7 +617,11 @@ export default function ProjectsPage() {
                             </Dialog>
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon">
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon"
+                                  className="h-8 w-8 rounded-full bg-gray-100 dark:bg-gray-800"
+                                >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
                               </AlertDialogTrigger>
@@ -546,12 +644,9 @@ export default function ProjectsPage() {
                           </div>
                         </div>
                         
-                        {project.description && (
-                          <p className="mt-1 text-sm text-muted-foreground">{project.description}</p>
-                        )}
-                        
+                        {/* Tags */}
                         {project.tags && project.tags.length > 0 && (
-                          <div className="mt-2 flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-1 mb-4">
                             {project.tags.map((tag, tagIndex) => (
                               <Badge
                                 key={tagIndex}
@@ -564,7 +659,15 @@ export default function ProjectsPage() {
                           </div>
                         )}
                         
-                        <div className="flex justify-end gap-2 mt-2">
+                        {/* Action Buttons */}
+                        <div className="flex justify-between mt-4">
+                          <Button variant="default" size="sm" asChild>
+                            <a href={`/dashboard/projects/${project._id}`} className="flex items-center gap-1">
+                              <ListTodo className="h-4 w-4 mr-1" />
+                              View Tasks
+                            </a>
+                          </Button>
+                          
                           {user && (
                             <ProjectSharingModal
                               projectId={project._id}
@@ -580,20 +683,17 @@ export default function ProjectsPage() {
                               onProjectUpdated={() => fetchProjects(true)}
                               trigger={
                                 <Button variant="outline" size="sm" className="flex items-center gap-1">
-                                  <Share className="h-4 w-4" />
+                                  <Share className="h-4 w-4 mr-1" />
                                   Share
                                 </Button>
                               }
                             />
                           )}
-                          <Button variant="outline" size="sm" asChild>
-                            <a href={`/dashboard/projects/${project._id}`}>View Tasks</a>
-                          </Button>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="rounded-lg border bg-card p-8 text-center shadow-sm">

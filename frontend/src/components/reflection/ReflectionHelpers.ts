@@ -26,16 +26,40 @@ export const createStructuredContent = (type: string, answers: Record<string, st
   }
 };
 
+// Define question interface with optional hint
+export interface ReflectionQuestion {
+  question: string;
+  hint?: string;
+}
+
 // Daily reflection questions
-export const DAILY_QUESTIONS = [
-  "Wat ging vandaag goed?",
-  "Wat had ik beter kunnen doen?",
-  "Welke taak gaf me de meeste energie?"
+export const DAILY_QUESTIONS: ReflectionQuestion[] = [
+  {
+    question: "Wat ging vandaag goed?",
+    hint: "Denk aan taken die je hebt afgerond, gesprekken die goed verliepen, of momenten waarop je productief was."
+  },
+  {
+    question: "Wat had ik beter kunnen doen?",
+    hint: "Reflecteer op momenten waarop je vastliep of beslissingen die je anders had kunnen nemen."
+  },
+  {
+    question: "Welke taak gaf me de meeste energie?",
+    hint: "Welke activiteit voelde niet als werk en zou je graag vaker willen doen?"
+  }
 ];
 
 // Weekly reflection questions
-export const WEEKLY_QUESTIONS = [
-  "Welke successen heb ik deze week geboekt?",
-  "Wat heb ik geleerd?",
-  "Welke drie prioriteiten stel ik voor de volgende week?"
+export const WEEKLY_QUESTIONS: ReflectionQuestion[] = [
+  {
+    question: "Welke successen heb ik deze week geboekt?",
+    hint: "Denk aan afgeronde taken, bereikte mijlpalen of persoonlijke overwinningen."
+  },
+  {
+    question: "Wat heb ik geleerd?",
+    hint: "Nieuwe inzichten, vaardigheden of lessen die je hebt opgedaan."
+  },
+  {
+    question: "Welke drie prioriteiten stel ik voor de volgende week?",
+    hint: "Moeten er nog projecten Sacred gemaakt worden? Welke projecten verdienen extra aandacht?"
+  }
 ];

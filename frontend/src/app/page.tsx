@@ -31,7 +31,7 @@ export default function Home() {
                   <div className="text-center">
                     <div className="text-6xl font-bold">6</div>
                     <div className="mt-2 text-lg">Projects</div>
-                    <div className="mt-1 text-sm">4-6 Tasks Daily</div>
+                    <div className="mt-1 text-sm">6 Daily Sacred Tasks</div>
                   </div>
                 </div>
               </div>
@@ -67,7 +67,7 @@ export default function Home() {
               
               <div className="rounded-lg border p-6 shadow-sm">
                 <h4 className="text-xl font-medium mb-2 flex items-center">
-                  <span className="text-primary mr-2">2️⃣</span> Work on 4-6 Tasks Daily
+                  <span className="text-primary mr-2">2️⃣</span> Work on 6 Daily Sacred Tasks
                 </h4>
                 <p className="text-muted-foreground">
                   Every day, complete a maximum of 6 actions that contribute to these projects for maximum impact.

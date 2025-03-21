@@ -19,7 +19,8 @@ import {
   LogIn,
   AlertTriangle,
   UserCheck,
-  Filter
+  Filter,
+  MessageSquare
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -28,6 +29,7 @@ import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
 import { apiEndpoint } from "@/config"
+import { FeedbackTab } from "@/components/FeedbackTab"
 import {
   Table,
   TableBody,
@@ -362,6 +364,7 @@ export default function AdminPage() {
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="activity">Activity Log</TabsTrigger>
           <TabsTrigger value="auth-logs">Authentication Logs</TabsTrigger>
+          <TabsTrigger value="feedback">User Feedback</TabsTrigger>
         </TabsList>
         <TabsContent value="users" className="space-y-4">
           <div className="flex items-center space-x-2">
@@ -730,6 +733,10 @@ export default function AdminPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+        
+        <TabsContent value="feedback">
+          <FeedbackTab />
         </TabsContent>
       </Tabs>
     </div>
