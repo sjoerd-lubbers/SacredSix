@@ -22,6 +22,7 @@ export interface Project {
   createdAt: string;
   updatedAt: string;
   collaborators?: Collaborator[];
+  taskCount?: number; // Number of tasks associated with this project
 }
 
 interface ProjectsState {

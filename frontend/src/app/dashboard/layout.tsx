@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import Link from "next/link"
 import { 
   LayoutDashboard, 
@@ -34,6 +34,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const pathname = usePathname()
   const { toast } = useToast()
   const { theme, setTheme } = useTheme()
   const [user, setUser] = useState<any>(null)
@@ -162,9 +163,8 @@ export default function DashboardLayout({
                     <div className="space-y-1">
                       {section.items.map((item) => {
                         // Check if this is the active route
-                        const isActive = typeof window !== 'undefined' && 
-                          (window.location.pathname === item.href || 
-                           (item.href !== '/dashboard' && window.location.pathname.startsWith(item.href)));
+                        const isActive = pathname === item.href || 
+                          (item.href !== '/dashboard' && pathname.startsWith(item.href));
                         
                         return (
                           <Link
@@ -197,9 +197,8 @@ export default function DashboardLayout({
                   <div className="space-y-1">
                     {adminSection.items.map((item) => {
                       // Check if this is the active route
-                      const isActive = typeof window !== 'undefined' && 
-                        (window.location.pathname === item.href || 
-                         (item.href !== '/dashboard' && window.location.pathname.startsWith(item.href)));
+                      const isActive = pathname === item.href || 
+                        (item.href !== '/dashboard' && pathname.startsWith(item.href));
                       
                       return (
                         <Link

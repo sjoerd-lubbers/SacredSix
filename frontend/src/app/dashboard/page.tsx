@@ -302,13 +302,9 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       
-                      <div className="mt-4 flex justify-between">
+                      <div className="mt-4">
                         <Button variant="ghost" size="sm" className="px-2 h-8" asChild>
                           <a href={`/dashboard/projects/${project._id}`}>View Tasks</a>
-                        </Button>
-                        
-                        <Button variant="outline" size="sm" className="px-2 h-8" asChild>
-                          <a href={`/dashboard/today`}>Add to Today</a>
                         </Button>
                       </div>
                     </div>
