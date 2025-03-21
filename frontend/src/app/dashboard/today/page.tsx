@@ -378,7 +378,7 @@ export default function TodayPage() {
 
         toast({
           title: "AI Recommendations Ready",
-          description: "Select the tasks you want to include in The Daily Sacred Six.",
+          description: "Select the tasks you want to include in The Daily Sacred 6.",
         })
       }
     } catch (error) {
@@ -405,7 +405,7 @@ export default function TodayPage() {
         toast({
           variant: "destructive",
           title: "Maximum tasks reached",
-          description: "You can only select up to 6 tasks for The Daily Sacred Six.",
+          description: "You can only select up to 6 tasks for The Daily Sacred 6.",
         })
         return prev
       }
@@ -502,7 +502,7 @@ export default function TodayPage() {
     <div className="space-y-6">
       <div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
         <div>
-          <h1 className="text-3xl font-bold">The Daily Sacred Six</h1>
+          <h1 className="text-3xl font-bold">The Daily Sacred 6</h1>
           <p className="text-muted-foreground">Focus on these 6 tasks from your Sacred Six projects to maximize your productivity</p>
         </div>
         {!isSelectionMode ? (
@@ -613,7 +613,7 @@ export default function TodayPage() {
                   AI Recommended Tasks
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  Select up to 6 tasks for The Daily Sacred Six. {selectedTaskIds.length}/6 selected.
+                  Select up to 6 tasks for The Daily Sacred 6. {selectedTaskIds.length}/6 selected.
                 </p>
               </div>
               <div className="space-y-2">
@@ -959,7 +959,7 @@ export default function TodayPage() {
           </div>
           <h3 className="text-lg font-medium">No tasks selected for today</h3>
           <p className="mt-2 text-muted-foreground">
-            Use the "Select Tasks" button to choose tasks for The Daily Sacred Six,
+            Use the "Select Tasks" button to choose tasks for The Daily Sacred 6,
             or "Get AI Recommendations" to get suggestions.
           </p>
           <div className="mt-4 flex justify-center space-x-4">

@@ -93,7 +93,7 @@ export default function DashboardLayout({
       title: "Sacred System",
       items: [
         { href: "/dashboard/personal-mission", label: "My Mission & Values", icon: Target },
-        { href: "/dashboard/reflections", label: "Reflections", icon: BookOpen },
+        { href: "/dashboard/reflections", label: "My Reflections", icon: BookOpen },
       ]
     },
     {

@@ -11,23 +11,13 @@ import {
 } from "@/components/ui/dialog"
 import {
   Form,
-  FormControl,
-  FormField,
-  FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { StructuredReflectionForm } from "./StructuredReflectionForm"
+import { DAILY_QUESTIONS, WEEKLY_QUESTIONS, ReflectionQuestion } from "./ReflectionHelpers"
+import { CalendarDays, Calendar } from "lucide-react"
 
 interface QuestionAnswer {
   question: string;
@@ -45,19 +35,6 @@ interface Reflection {
   createdAt: string
   updatedAt: string
 }
-
-// Define the questions for each reflection type
-const DAILY_QUESTIONS = [
-  "Wat ging vandaag goed?",
-  "Wat had ik beter kunnen doen?",
-  "Welke taak gaf me de meeste energie?"
-];
-
-const WEEKLY_QUESTIONS = [
-  "Welke successen heb ik deze week geboekt?",
-  "Wat heb ik geleerd?",
-  "Welke drie prioriteiten stel ik voor de volgende week?"
-];
 
 // Update the schema to use questionAnswers
 const reflectionSchema = z.object({
@@ -88,6 +65,8 @@ export const ReflectionEditDialog: React.FC<ReflectionEditDialogProps> = ({
   isSubmitting
 }) => {
   const [questionAnswers, setQuestionAnswers] = useState<QuestionAnswer[]>([]);
+  const [currentType, setCurrentType] = useState<'daily' | 'weekly'>('daily');
+  const questionObjects = currentType === 'daily' ? DAILY_QUESTIONS : WEEKLY_QUESTIONS;
 
   const form = useForm<ReflectionFormValues>({
     resolver: zodResolver(reflectionSchema),
@@ -100,8 +79,8 @@ export const ReflectionEditDialog: React.FC<ReflectionEditDialogProps> = ({
   // Helper to create default question-answer pairs for a type
   const createDefaultQuestionAnswers = (type: 'daily' | 'weekly'): QuestionAnswer[] => {
     const questions = type === 'daily' ? DAILY_QUESTIONS : WEEKLY_QUESTIONS;
-    return questions.map(question => ({
-      question,
+    return questions.map(questionObj => ({
+      question: questionObj.question,
       answer: ''
     }));
   };
@@ -109,6 +88,7 @@ export const ReflectionEditDialog: React.FC<ReflectionEditDialogProps> = ({
   useEffect(() => {
     if (reflection) {
       console.log("Loading reflection for editing:", reflection);
+      setCurrentType(reflection.type);
       
       let qaToUse: QuestionAnswer[] = [];
       
@@ -139,14 +119,6 @@ export const ReflectionEditDialog: React.FC<ReflectionEditDialogProps> = ({
     form.setValue("questionAnswers", newQA);
   };
 
-  // Handle type change
-  const handleTypeChange = (type: 'daily' | 'weekly') => {
-    // Create new question-answer pairs for the selected type
-    const newQA = createDefaultQuestionAnswers(type);
-    setQuestionAnswers(newQA);
-    form.setValue("questionAnswers", newQA);
-  };
-
   // Update the form submission
   const handleFormSubmit = (data: ReflectionFormValues) => {
     console.log("Submitting reflection with data:", data);
@@ -157,60 +129,56 @@ export const ReflectionEditDialog: React.FC<ReflectionEditDialogProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Edit Reflection</DialogTitle>
         </DialogHeader>
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Reflection Type</FormLabel>
-                  <Select 
-                    onValueChange={(value: 'daily' | 'weekly') => {
-                      field.onChange(value);
-                      handleTypeChange(value);
-                    }} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a type" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="daily">Daily</SelectItem>
-                      <SelectItem value="weekly">Weekly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="flex items-center">
+              <h3 className="text-lg font-medium flex items-center">
+                {currentType === 'daily' ? (
+                  <>
+                    <CalendarDays className="h-5 w-5 mr-2 text-primary" />
+                    Daily Reflection
+                  </>
+                ) : (
+                  <>
+                    <Calendar className="h-5 w-5 mr-2 text-primary" />
+                    Weekly Reflection
+                  </>
+                )}
+              </h3>
+            </div>
             
             <div className="space-y-4">
-              <FormLabel>Reflection</FormLabel>
               <div className="text-sm text-muted-foreground mb-2">
                 Answer the following questions:
               </div>
               
-              {questionAnswers.map((qa, index) => (
-                <div key={index} className="space-y-2">
-                  <FormLabel>{qa.question}</FormLabel>
-                  <textarea
-                    className="w-full min-h-[100px] p-2 border rounded-md"
-                    value={qa.answer}
-                    onChange={(e) => {
-                      const newQA = [...questionAnswers];
-                      newQA[index].answer = e.target.value;
-                      handleQuestionAnswersChange(newQA);
-                    }}
-                  />
-                </div>
-              ))}
+              {questionAnswers.map((qa, index) => {
+                const questionObj = questionObjects[index];
+                return (
+                  <div key={index} className="space-y-2">
+                    <FormLabel>{qa.question}</FormLabel>
+                    {questionObj.hint && (
+                      <p className="text-xs text-muted-foreground mb-2 italic">
+                        {questionObj.hint}
+                      </p>
+                    )}
+                    <textarea
+                      className="w-full min-h-[100px] p-2 border rounded-md"
+                      value={qa.answer}
+                      onChange={(e) => {
+                        const newQA = [...questionAnswers];
+                        newQA[index].answer = e.target.value;
+                        handleQuestionAnswersChange(newQA);
+                      }}
+                    />
+                  </div>
+                );
+              })}
             </div>
             
             <DialogFooter>

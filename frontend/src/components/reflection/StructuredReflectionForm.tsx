@@ -36,9 +36,14 @@ export const StructuredReflectionForm: React.FC<StructuredReflectionFormProps> =
 
   return (
     <div className="space-y-4">
-      {questions.map((question, index) => (
+      {questions.map((questionObj, index) => (
         <div key={index}>
-          <h4 className="text-sm font-medium mb-2">{question}</h4>
+          <h4 className="text-sm font-medium mb-2">{questionObj.question}</h4>
+          {questionObj.hint && (
+            <p className="text-xs text-muted-foreground mb-2 italic">
+              {questionObj.hint}
+            </p>
+          )}
           <Textarea 
             className="min-h-[80px]"
             value={index === 0 ? answers.q1 : index === 1 ? answers.q2 : answers.q3}
