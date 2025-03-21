@@ -74,7 +74,9 @@ router.post(
               email: user.email,
               role: user.role,
               mission: user.mission,
+              missionLastValidated: user.missionLastValidated,
               values: user.values,
+              valuesLastValidated: user.valuesLastValidated,
               alignment: user.alignment
             }
           });
@@ -172,7 +174,9 @@ router.post(
               email: user.email,
               role: user.role,
               mission: user.mission,
+              missionLastValidated: user.missionLastValidated,
               values: user.values,
+              valuesLastValidated: user.valuesLastValidated,
               alignment: user.alignment
             }
           });
@@ -241,6 +245,178 @@ router.put(
         success: true
       });
       await activityLog.save();
+
+      // Return updated user without password
+      const updatedUser = await User.findById(req.userId).select('-password');
+      res.json(updatedUser);
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send('Server error');
+    }
+  }
+);
+
+// @route   PUT /api/auth/mission
+// @desc    Update user's mission statement
+// @access  Private
+router.put(
+  '/mission',
+  [
+    auth,
+    body('mission').optional().isString()
+  ],
+  async (req, res) => {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { mission } = req.body;
+
+    try {
+      // Find user
+      const user = await User.findById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Update mission
+      if (mission !== undefined) user.mission = mission;
+
+      // Save user
+      await user.save();
+
+      // Return updated user without password
+      const updatedUser = await User.findById(req.userId).select('-password');
+      res.json(updatedUser);
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send('Server error');
+    }
+  }
+);
+
+// @route   PUT /api/auth/values
+// @desc    Update user's core values
+// @access  Private
+router.put(
+  '/values',
+  [
+    auth,
+    body('values').optional().isArray()
+  ],
+  async (req, res) => {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { values } = req.body;
+
+    try {
+      // Find user
+      const user = await User.findById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Update values
+      if (values !== undefined) user.values = values;
+
+      // Save user
+      await user.save();
+
+      // Return updated user without password
+      const updatedUser = await User.findById(req.userId).select('-password');
+      res.json(updatedUser);
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send('Server error');
+    }
+  }
+);
+
+// @route   PUT /api/auth/validate-mission
+// @desc    Validate user's mission statement (mark as still valid)
+// @access  Private
+router.put(
+  '/validate-mission',
+  [
+    auth,
+    body('missionLastValidated').optional().isISO8601()
+  ],
+  async (req, res) => {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { missionLastValidated } = req.body;
+
+    try {
+      // Find user
+      const user = await User.findById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Update mission validation date
+      if (missionLastValidated) {
+        user.missionLastValidated = new Date(missionLastValidated);
+      } else {
+        user.missionLastValidated = new Date();
+      }
+
+      // Save user
+      await user.save();
+
+      // Return updated user without password
+      const updatedUser = await User.findById(req.userId).select('-password');
+      res.json(updatedUser);
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send('Server error');
+    }
+  }
+);
+
+// @route   PUT /api/auth/validate-values
+// @desc    Validate user's core values (mark as still valid)
+// @access  Private
+router.put(
+  '/validate-values',
+  [
+    auth,
+    body('valuesLastValidated').optional().isISO8601()
+  ],
+  async (req, res) => {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { valuesLastValidated } = req.body;
+
+    try {
+      // Find user
+      const user = await User.findById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Update values validation date
+      if (valuesLastValidated) {
+        user.valuesLastValidated = new Date(valuesLastValidated);
+      } else {
+        user.valuesLastValidated = new Date();
+      }
+
+      // Save user
+      await user.save();
 
       // Return updated user without password
       const updatedUser = await User.findById(req.userId).select('-password');
