@@ -18,6 +18,7 @@ const apiKeyRoutes = require('./routes/apiKeys');
 const dailyCompletionRoutes = require('./routes/dailyCompletion');
 const dataExportRoutes = require('./routes/dataExport');
 const adminRoutes = require('./routes/admin');
+const feedbackRoutes = require('./routes/feedback');
 
 // Import utilities
 const { initSchedulers } = require('./utils/scheduler');
@@ -81,6 +82,7 @@ app.use('/api/api-keys', apiKeyRoutes);
 app.use('/api/daily-completion', dailyCompletionRoutes);
 app.use('/api/data-export', dataExportRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/feedback', feedbackRoutes);
 
 // Root route
 app.get('/', (req, res) => {

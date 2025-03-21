@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
 import { Avatar } from "@/components/ui/avatar"
 import { EnvironmentIndicator } from "@/components/EnvironmentIndicator"
+import { FeedbackDialog } from "@/components/FeedbackDialog"
 
 export default function DashboardLayout({
   children,
@@ -84,7 +85,7 @@ export default function DashboardLayout({
       title: "Main",
       items: [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/dashboard/today", label: "Today", icon: CheckSquare },
+        { href: "/dashboard/today", label: "Daily Sacred 6", icon: CheckSquare },
         { href: "/dashboard/projects", label: "My Projects", icon: Calendar },
         { href: "/dashboard/shared-projects", label: "Shared Projects", icon: Users },
       ]
@@ -221,6 +222,9 @@ export default function DashboardLayout({
         {/* Main Content */}
         <main className="flex-1 overflow-x-hidden p-4 md:p-6 md:ml-64">{children}</main>
       </div>
+      
+      {/* Feedback Dialog */}
+      <FeedbackDialog />
     </div>
   )
 }
