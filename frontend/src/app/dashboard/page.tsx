@@ -134,13 +134,15 @@ export default function DashboardPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg border bg-card p-4 shadow-sm">
+        <div className="rounded-lg border bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800 p-4 shadow-sm transition-all duration-200 hover:shadow-md">
           <div className="flex items-center space-x-2">
-            <ListTodo className="h-5 w-5 text-primary" />
+            <div className="bg-blue-100 dark:bg-blue-800 p-2 rounded-full">
+              <ListTodo className="h-5 w-5 text-blue-600 dark:text-blue-300" />
+            </div>
             <h3 className="font-medium">Total Tasks</h3>
           </div>
           <div className="flex items-end justify-between">
-            <p className="mt-2 text-3xl font-bold">{stats.totalTasks}</p>
+            <p className="mt-2 text-3xl font-bold text-blue-700 dark:text-blue-300">{stats.totalTasks}</p>
             {sparklineData.creationSparkline.length > 0 && (
               <div className="mb-1">
                 <Sparkline 
@@ -152,15 +154,17 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">Task creation trend (30 days)</p>
+          <p className="mt-1 text-xs text-blue-600/70 dark:text-blue-400/70">Task creation trend (30 days)</p>
         </div>
-        <div className="rounded-lg border bg-card p-4 shadow-sm">
+        <div className="rounded-lg border bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800 p-4 shadow-sm transition-all duration-200 hover:shadow-md">
           <div className="flex items-center space-x-2">
-            <CheckSquare className="h-5 w-5 text-primary" />
+            <div className="bg-green-100 dark:bg-green-800 p-2 rounded-full">
+              <CheckSquare className="h-5 w-5 text-green-600 dark:text-green-300" />
+            </div>
             <h3 className="font-medium">Completed</h3>
           </div>
           <div className="flex items-end justify-between">
-            <p className="mt-2 text-3xl font-bold">{stats.completedTasks}</p>
+            <p className="mt-2 text-3xl font-bold text-green-700 dark:text-green-300">{stats.completedTasks}</p>
             {sparklineData.completionSparkline.length > 0 && (
               <div className="mb-1">
                 <Sparkline 
@@ -172,21 +176,68 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
-          <p className="mt-1 text-xs text-muted-foreground">Task completion trend (30 days)</p>
+          <p className="mt-1 text-xs text-green-600/70 dark:text-green-400/70">Task completion trend (30 days)</p>
         </div>
-        <div className="rounded-lg border bg-card p-4 shadow-sm">
+        <div className="rounded-lg border bg-purple-50 dark:bg-purple-900/10 border-purple-200 dark:border-purple-800 p-4 shadow-sm transition-all duration-200 hover:shadow-md">
           <div className="flex items-center space-x-2">
-            <Clock className="h-5 w-5 text-primary" />
+            <div className="bg-purple-100 dark:bg-purple-800 p-2 rounded-full">
+              <Clock className="h-5 w-5 text-purple-600 dark:text-purple-300" />
+            </div>
             <h3 className="font-medium">In Progress</h3>
           </div>
-          <p className="mt-2 text-3xl font-bold">{stats.inProgressTasks}</p>
+          <div className="flex items-end justify-between">
+            <p className="mt-2 text-3xl font-bold text-purple-700 dark:text-purple-300">{stats.inProgressTasks}</p>
+            <div className="text-xs text-purple-600 dark:text-purple-400 bg-purple-100 dark:bg-purple-800 px-2 py-1 rounded-full">
+              {stats.totalTasks > 0 ? Math.round((stats.inProgressTasks / stats.totalTasks) * 100) : 0}% of total
+            </div>
+          </div>
+          <p className="mt-1 text-xs text-purple-600/70 dark:text-purple-400/70">Tasks currently in progress</p>
         </div>
-        <div className="rounded-lg border bg-card p-4 shadow-sm">
+        <div className="rounded-lg border bg-amber-50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800 p-4 shadow-sm transition-all duration-200 hover:shadow-md">
           <div className="flex items-center space-x-2">
-            <Calendar className="h-5 w-5 text-primary" />
+            <div className="bg-amber-100 dark:bg-amber-800 p-2 rounded-full">
+              <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-300" />
+            </div>
             <h3 className="font-medium">Today's Tasks</h3>
           </div>
-          <p className="mt-2 text-3xl font-bold">{stats.todayTasks}</p>
+          <div className="flex items-end justify-between">
+            <p className="mt-2 text-3xl font-bold text-amber-700 dark:text-amber-300">{stats.todayTasks}</p>
+            <Button variant="ghost" size="sm" className="h-7 px-2" asChild>
+              <a href="/dashboard/today">View</a>
+            </Button>
+          </div>
+          <p className="mt-1 text-xs text-amber-600/70 dark:text-amber-400/70">Tasks selected for today</p>
+        </div>
+      </div>
+      
+      {/* Quick Actions */}
+      <div className="rounded-lg border bg-card p-4 shadow-sm">
+        <h3 className="font-medium mb-3">Quick Actions</h3>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <Button className="h-auto py-4 flex flex-col items-center justify-center gap-2" asChild>
+            <a href="/dashboard/today">
+              <Calendar className="h-6 w-6 mb-1" />
+              <span>Daily Sacred 6</span>
+            </a>
+          </Button>
+          <Button className="h-auto py-4 flex flex-col items-center justify-center gap-2" variant="outline" asChild>
+            <a href="/dashboard/projects">
+              <ListTodo className="h-6 w-6 mb-1" />
+              <span>My Projects</span>
+            </a>
+          </Button>
+          <Button className="h-auto py-4 flex flex-col items-center justify-center gap-2" variant="outline" asChild>
+            <a href="/dashboard/reflections">
+              <Clock className="h-6 w-6 mb-1" />
+              <span>Reflections</span>
+            </a>
+          </Button>
+          <Button className="h-auto py-4 flex flex-col items-center justify-center gap-2" variant="outline" asChild>
+            <a href="/dashboard/personal-mission">
+              <CheckSquare className="h-6 w-6 mb-1" />
+              <span>My Mission</span>
+            </a>
+          </Button>
         </div>
       </div>
 
@@ -198,37 +249,82 @@ export default function DashboardPage() {
         </div>
         
         {/* Sacred Six Projects - Right Side */}
-        <div className="md:col-span-4 rounded-lg border bg-card p-4 shadow-sm">
+        <div className="md:col-span-4 rounded-lg border bg-amber-50/50 dark:bg-amber-900/5 border-amber-200 dark:border-amber-800/30 p-4 shadow-sm">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="font-medium">Sacred Six</h3>
+            <div className="flex items-center">
+              <div className="bg-amber-100 dark:bg-amber-800 p-2 rounded-full mr-2">
+                <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-300" />
+              </div>
+              <h3 className="font-medium text-lg">Sacred Six Projects</h3>
+            </div>
             <Button variant="outline" size="sm" asChild>
               <a href="/dashboard/sacred-six">View All</a>
             </Button>
           </div>
-          {projects.length > 0 ? (
+          
+          {projects.filter(project => project.isSacred).length > 0 ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {projects
                 .filter(project => project.isSacred)
                 .slice(0, 6)
-                .map((project) => (
-                  <div key={project._id} className="rounded-md border p-4">
-                    <div className="flex items-center">
-                      <div className="mr-3 flex-shrink-0" style={{ width: '32px', height: '32px' }}>
-                        <div className="w-full h-full rounded-full flex items-center justify-center bg-amber-100 text-amber-700">
-                          <span className="text-sm font-bold">{projects.filter(p => p.isSacred).indexOf(project) + 1}</span>
+                .map((project, index) => {
+                  // Calculate completion percentage
+                  const projectTasks = tasks.filter(task => task.projectId === project._id);
+                  const completedTasks = projectTasks.filter(task => task.status === "done").length;
+                  const completionPercentage = projectTasks.length > 0 
+                    ? Math.round((completedTasks / projectTasks.length) * 100) 
+                    : 0;
+                  
+                  return (
+                    <div 
+                      key={project._id} 
+                      className="rounded-lg border border-amber-200 dark:border-amber-800/50 bg-white dark:bg-gray-800 p-4 shadow-sm hover:shadow-md transition-all duration-200"
+                    >
+                      <div className="flex items-center mb-2">
+                        <div className="mr-3 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-amber-100 dark:bg-amber-800 text-amber-700 dark:text-amber-300 ring-2 ring-amber-300 dark:ring-amber-700">
+                          <span className="text-sm font-bold">{index + 1}</span>
+                        </div>
+                        <h4 className="font-medium text-lg truncate">{project.name}</h4>
+                      </div>
+                      
+                      <div className="mt-3 space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">{project.taskCount || 0} tasks</span>
+                          <span className="font-medium">{completionPercentage}% complete</span>
+                        </div>
+                        
+                        {/* Progress bar */}
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5">
+                          <div 
+                            className="bg-amber-500 dark:bg-amber-600 h-1.5 rounded-full transition-all duration-500" 
+                            style={{ width: `${completionPercentage}%` }}
+                          ></div>
                         </div>
                       </div>
-                      <h4 className="font-medium">{project.name}</h4>
+                      
+                      <div className="mt-4 flex justify-between">
+                        <Button variant="ghost" size="sm" className="px-2 h-8" asChild>
+                          <a href={`/dashboard/projects/${project._id}`}>View Tasks</a>
+                        </Button>
+                        
+                        <Button variant="outline" size="sm" className="px-2 h-8" asChild>
+                          <a href={`/dashboard/today`}>Add to Today</a>
+                        </Button>
+                      </div>
                     </div>
-                    <p className="mt-1 text-sm text-muted-foreground">{project.taskCount || 0} tasks</p>
-                    <Button variant="ghost" size="sm" className="mt-2" asChild>
-                      <a href={`/dashboard/projects/${project._id}`}>View Project</a>
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
             </div>
           ) : (
-            <p className="text-center text-muted-foreground">No Sacred Six projects yet</p>
+            <div className="rounded-lg border border-dashed border-amber-300 dark:border-amber-700 p-6 text-center">
+              <h4 className="font-medium mb-2">No Sacred Six projects yet</h4>
+              <p className="text-sm text-muted-foreground mb-4">
+                Create up to 6 sacred projects to focus on your most important goals.
+              </p>
+              <Button asChild>
+                <a href="/dashboard/projects">Create Sacred Project</a>
+              </Button>
+            </div>
           )}
         </div>
       </div>

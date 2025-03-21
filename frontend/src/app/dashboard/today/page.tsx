@@ -581,17 +581,65 @@ export default function TodayPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Progress indicator */}
+      {!isSelectionMode && todayTasks.length > 0 && (
+        <div className="rounded-lg border bg-card p-4 shadow-sm">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex-1">
+              <h3 className="text-lg font-medium mb-2">Today's Progress</h3>
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                <div 
+                  className="bg-primary h-2.5 rounded-full transition-all duration-500" 
+                  style={{ 
+                    width: `${Math.round((todayTasks.filter(t => t.status === "done").length / todayTasks.length) * 100)}%` 
+                  }}
+                ></div>
+              </div>
+              <div className="flex justify-between mt-1 text-sm text-muted-foreground">
+                <span>{todayTasks.filter(t => t.status === "done").length} of {todayTasks.length} completed</span>
+                <span>{Math.round((todayTasks.filter(t => t.status === "done").length / todayTasks.length) * 100)}%</span>
+              </div>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <div className="bg-green-50 dark:bg-green-900/20 text-green-800 dark:text-green-300 px-3 py-2 rounded-lg flex items-center">
+                <CheckCircle2 className="h-5 w-5 mr-2" />
+                <div>
+                  <div className="text-xl font-bold">{todayTasks.filter(t => t.status === "done").length}</div>
+                  <div className="text-xs">Completed</div>
+                </div>
+              </div>
+              <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-300 px-3 py-2 rounded-lg flex items-center">
+                <Clock className="h-5 w-5 mr-2" />
+                <div>
+                  <div className="text-xl font-bold">{todayTasks.filter(t => t.status === "in_progress").length}</div>
+                  <div className="text-xs">In Progress</div>
+                </div>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-gray-300 px-3 py-2 rounded-lg flex items-center">
+                <Circle className="h-5 w-5 mr-2" />
+                <div>
+                  <div className="text-xl font-bold">{todayTasks.filter(t => t.status === "todo").length}</div>
+                  <div className="text-xs">To Do</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isSelectionMode ? (
         <div className="rounded-lg border bg-card shadow-sm">
           <Tabs defaultValue="recommended" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="recommended">
-                AI Recommended
-                <Badge variant="outline" className="ml-2">{recommendedTasks.length}</Badge>
+              <TabsTrigger value="recommended" className="flex items-center gap-1">
+                <Sparkles className="h-4 w-4" />
+                <span>AI Recommended</span>
+                <Badge variant="outline" className="ml-1">{recommendedTasks.length}</Badge>
               </TabsTrigger>
-              <TabsTrigger value="overdue">
-                Overdue Tasks
-                <Badge variant="outline" className="ml-2">
+              <TabsTrigger value="overdue" className="flex items-center gap-1">
+                <AlertCircle className="h-4 w-4" />
+                <span>Overdue</span>
+                <Badge variant="outline" className="ml-1">
                   {eligibleTasks.filter(task => {
                     if (!task.dueDate) return false;
                     const dueDate = new Date(task.dueDate);
@@ -601,9 +649,10 @@ export default function TodayPage() {
                   }).length}
                 </Badge>
               </TabsTrigger>
-              <TabsTrigger value="eligible">
-                All Eligible Tasks
-                <Badge variant="outline" className="ml-2">{eligibleTasks.length}</Badge>
+              <TabsTrigger value="eligible" className="flex items-center gap-1">
+                <CheckCircle2 className="h-4 w-4" />
+                <span>All Tasks</span>
+                <Badge variant="outline" className="ml-1">{eligibleTasks.length}</Badge>
               </TabsTrigger>
             </TabsList>
             <TabsContent value="recommended" className="p-4">
@@ -822,119 +871,163 @@ export default function TodayPage() {
 
             </div>
           )}
-          {todayTasks.map((task) => (
-            <div key={task._id} className="rounded-lg border bg-card p-4 shadow-sm">
-              <div className="flex items-start justify-between">
-                <div className="flex items-start space-x-4">
-                  <button
-                    onClick={() => {
-                      const newStatus = task.status === "done" 
-                        ? "todo" 
-                        : task.status === "in_progress" 
-                          ? "done" 
-                          : "in_progress"
-                      handleStatusChange(task._id, newStatus)
-                    }}
-                    className="mt-1"
-                  >
-                    {getStatusIcon(task.status)}
-                  </button>
-                  <div>
-                    <h3 className="font-medium">{task.name}</h3>
-                    {task.description && (
-                      <p className="mt-1 text-sm text-muted-foreground">{task.description}</p>
-                    )}
-                    <div className="mt-2 flex flex-wrap items-center gap-2">
-                      <span className="text-xs text-muted-foreground">
-                        Project: <a href={`/dashboard/projects/${task.projectId}`} className="text-primary hover:underline">{task.projectName}</a>
-                      </span>
-                      <Badge className={`${
-                        task.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 
-                        task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' : 
-                        'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                      }`}>
-                        {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)} Priority
-                      </Badge>
-                      {task.dueDate && (
-                        <span className={`text-xs ${new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) ? "text-red-600 dark:text-red-400 font-medium" : "text-muted-foreground"}`}>
-                          Due: {new Date(task.dueDate).toLocaleDateString()}
-                          {new Date(task.dueDate) < new Date() && new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0) && " (Overdue)"}
-                        </span>
-                      )}
+          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            {todayTasks.map((task) => {
+              // Determine card background based on status
+              const cardBg = task.status === "done" 
+                ? "bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800" 
+                : task.status === "in_progress" 
+                  ? "bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800"
+                  : "";
+              
+              // Determine if task is overdue
+              const isOverdue = task.dueDate && new Date(task.dueDate) < new Date() && 
+                new Date(task.dueDate).setHours(0,0,0,0) < new Date().setHours(0,0,0,0);
+              
+              return (
+                <div 
+                  key={task._id} 
+                  className={`rounded-lg border ${cardBg} bg-card p-4 shadow-sm transition-all duration-200 hover:shadow-md`}
+                >
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center">
+                      <button
+                        onClick={() => {
+                          const newStatus = task.status === "done" 
+                            ? "todo" 
+                            : task.status === "in_progress" 
+                              ? "done" 
+                              : "in_progress"
+                          handleStatusChange(task._id, newStatus)
+                        }}
+                        className="mr-3 transition-transform duration-200 hover:scale-110"
+                        title={`Mark as ${task.status === "done" ? "To Do" : task.status === "in_progress" ? "Done" : "In Progress"}`}
+                      >
+                        {getStatusIcon(task.status)}
+                      </button>
+                      <div>
+                        <Badge className={`${
+                          task.priority === 'high' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' : 
+                          task.priority === 'medium' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' : 
+                          'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                        }`}>
+                          {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                        </Badge>
+                        {task.isRecurring && (
+                          <Badge variant="outline" className="ml-1">
+                            <Repeat className="h-3 w-3 mr-1" />
+                            Recurring
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex space-x-1">
+                      <Button
+                        variant={task.status === "in_progress" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleStatusChange(task._id, "in_progress")}
+                        disabled={task.status === "in_progress"}
+                        className="h-7 px-2"
+                      >
+                        <Clock className="h-3.5 w-3.5 mr-1" />
+                        Start
+                      </Button>
+                      <Button
+                        variant={task.status === "done" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => handleStatusChange(task._id, "done")}
+                        disabled={task.status === "done"}
+                        className="h-7 px-2"
+                      >
+                        <CheckCircle2 className="h-3.5 w-3.5 mr-1" />
+                        Done
+                      </Button>
                     </div>
                   </div>
-                </div>
-                <div className="flex flex-col space-y-2">
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleStatusChange(task._id, "in_progress")}
-                      disabled={task.status === "in_progress"}
-                    >
-                      Start
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleStatusChange(task._id, "done")}
-                      disabled={task.status === "done"}
-                    >
-                      Complete
-                    </Button>
+                  
+                  <h3 className="font-medium text-lg mb-2">{task.name}</h3>
+                  
+                  {task.description && (
+                    <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
+                  )}
+                  
+                  <div className="flex flex-wrap items-center gap-2 mb-3">
+                    <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
+                      {task.projectName}
+                    </span>
+                    
+                    {task.dueDate && (
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        isOverdue 
+                          ? "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" 
+                          : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+                      }`}>
+                        Due: {new Date(task.dueDate).toLocaleDateString()}
+                        {isOverdue && " (Overdue)"}
+                      </span>
+                    )}
                   </div>
-                  <TaskLogDialog 
-                    task={task} 
-                    onLogAdded={() => {
-                      // Update the task logs without closing the dialog
-                      // by updating only the specific task's logs
-                      const token = localStorage.getItem("token")
-                      if (!token) return
+                  
+                  <div className="flex justify-between items-center">
+                    <a 
+                      href={`/dashboard/projects/${task.projectId}`} 
+                      className="text-xs text-primary hover:underline flex items-center"
+                    >
+                      View Project
+                    </a>
+                    
+                    <TaskLogDialog 
+                      task={task} 
+                      onLogAdded={() => {
+                        // Update the task logs without closing the dialog
+                        const token = localStorage.getItem("token")
+                        if (!token) return
 
-                      const config = {
-                        headers: { Authorization: `Bearer ${token}` }
+                        const config = {
+                          headers: { Authorization: `Bearer ${token}` }
+                        }
+
+                        // Fetch only this task's data to update it
+                        axios.get(apiEndpoint(`tasks/${task._id}`), config)
+                          .then(response => {
+                            // Update this task in the todayTasks array, preserving the projectName
+                            setTodayTasks(prev => 
+                              prev.map(t => t._id === task._id ? {
+                                ...response.data,
+                                projectName: t.projectName // Preserve the project name
+                              } : t)
+                            )
+                          })
+                          .catch(error => {
+                            console.error("Error updating task logs:", error)
+                          })
+
+                        // Also fetch the logs to update the count
+                        axios.get(apiEndpoint(`tasks/${task._id}/logs`), config)
+                          .then(response => {
+                            // The logs count will be updated in the TaskLogDialog component
+                          })
+                          .catch(error => {
+                            console.error("Error fetching task logs:", error)
+                          })
+                      }}
+                      trigger={
+                        <Button variant="ghost" size="sm" className="gap-1 relative h-7 px-2">
+                          <MessageSquare className="h-3.5 w-3.5" />
+                          <span>Logs</span>
+                          {task.logs && task.logs.length > 0 && (
+                            <span className="ml-1 bg-primary text-primary-foreground text-xs rounded-full px-1.5 py-0.5 inline-flex items-center justify-center">
+                              {task.logs.length}
+                            </span>
+                          )}
+                        </Button>
                       }
-
-                      // Fetch only this task's data to update it
-                      axios.get(apiEndpoint(`tasks/${task._id}`), config)
-                        .then(response => {
-                          // Update this task in the todayTasks array, preserving the projectName
-                          setTodayTasks(prev => 
-                            prev.map(t => t._id === task._id ? {
-                              ...response.data,
-                              projectName: t.projectName // Preserve the project name
-                            } : t)
-                          )
-                        })
-                        .catch(error => {
-                          console.error("Error updating task logs:", error)
-                        })
-
-                      // Also fetch the logs to update the count
-                      axios.get(apiEndpoint(`tasks/${task._id}/logs`), config)
-                        .then(response => {
-                          // The logs count will be updated in the TaskLogDialog component
-                        })
-                        .catch(error => {
-                          console.error("Error fetching task logs:", error)
-                        })
-                    }}
-                    trigger={
-                      <Button variant="secondary" size="sm" className="w-full gap-1 relative">
-                        <MessageSquare className="h-4 w-4" />
-                        <span>Task Logs</span>
-                        {task.logs && task.logs.length > 0 && (
-                          <span className="ml-1 bg-gray-600 text-white text-xs rounded-full px-1.5 py-0.5 inline-flex items-center justify-center">
-                            {task.logs.length}
-                          </span>
-                        )}
-                      </Button>
-                    }
-                  />
+                    />
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              );
+            })}
+          </div>
         </div>
       ) : (
         <div className="rounded-lg border bg-card p-8 text-center shadow-sm">
