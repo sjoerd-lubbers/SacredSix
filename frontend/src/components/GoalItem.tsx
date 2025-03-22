@@ -109,110 +109,110 @@ export function GoalItem({
     } else {
       return "not_started";
     }
-  }
+  };
 
   // Status badge color
   const getStatusColor = (status: string) => {
     switch (status) {
       case "not_started":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
       case "in_progress":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
       case "completed":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       case "at_risk":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
       case "blocked":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
     }
-  }
+  };
 
   // Status icon
   const getStatusIcon = (status: string) => {
     switch (status) {
       case "not_started":
-        return <Circle className="h-4 w-4" />
+        return <Circle className="h-4 w-4" />;
       case "in_progress":
-        return <Clock className="h-4 w-4 text-blue-500" />
+        return <Clock className="h-4 w-4 text-blue-500" />;
       case "completed":
-        return <CheckCircle className="h-4 w-4 text-green-500" />
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "at_risk":
-        return <AlertCircle className="h-4 w-4 text-yellow-500" />
+        return <AlertCircle className="h-4 w-4 text-yellow-500" />;
       case "blocked":
-        return <AlertCircle className="h-4 w-4 text-red-500" />
+        return <AlertCircle className="h-4 w-4 text-red-500" />;
       default:
-        return <Circle className="h-4 w-4" />
+        return <Circle className="h-4 w-4" />;
     }
-  }
+  };
 
   // Format status label
   const formatStatusLabel = (status: string) => {
     switch (status) {
       case "not_started":
-        return "Not Started"
+        return "Not Started";
       case "in_progress":
-        return "In Progress"
+        return "In Progress";
       case "completed":
-        return "Completed"
+        return "Completed";
       case "at_risk":
-        return "At Risk"
+        return "At Risk";
       case "blocked":
-        return "Blocked"
+        return "Blocked";
       default:
-        return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        return status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
-  }
+  };
 
   // Progress color based on percentage - using simpler colors as requested
   const getProgressColor = (percentage: number) => {
-    if (percentage >= 100) return "bg-green-500"  // Completed
-    if (percentage > 0) return "bg-blue-400"      // In Progress (lighter blue)
-    return "bg-gray-400"                          // Not Started
-  }
+    if (percentage >= 100) return "bg-green-500";  // Completed
+    if (percentage > 0) return "bg-blue-400";      // In Progress (lighter blue)
+    return "bg-gray-400";                          // Not Started
+  };
 
   // Get task status color
   const getTaskStatusColor = (status: string) => {
     switch (status) {
       case "done":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       case "in_progress":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300";
       case "todo":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
     }
-  }
+  };
 
   // Get task status icon
   const getTaskStatusIcon = (status: string) => {
     switch (status) {
       case "done":
-        return <CheckCircle className="h-4 w-4 text-green-500" />
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
       case "in_progress":
-        return <Clock className="h-4 w-4 text-blue-500" />
+        return <Clock className="h-4 w-4 text-blue-500" />;
       case "todo":
-        return <Circle className="h-4 w-4" />
+        return <Circle className="h-4 w-4" />;
       default:
-        return <Circle className="h-4 w-4" />
+        return <Circle className="h-4 w-4" />;
     }
-  }
+  };
 
   // Get task priority color
   const getTaskPriorityColor = (priority: string) => {
     switch (priority) {
       case "high":
-        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300";
       case "medium":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300";
       case "low":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300";
       default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300"
+        return "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300";
     }
-  }
+  };
 
   // Get current goal status
   const currentStatus = determineGoalStatus();
