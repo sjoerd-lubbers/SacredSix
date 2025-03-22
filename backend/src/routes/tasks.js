@@ -1,6 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const auth = require('../middleware/auth');
+const axios = require('axios');
 const Task = require('../models/Task');
 const Project = require('../models/Project');
 const User = require('../models/User');
@@ -27,6 +28,7 @@ router.post(
     try {
       const {
         projectId,
+        goalId,
         name,
         description,
         priority,
@@ -55,6 +57,7 @@ router.post(
       // Create new task
       const task = new Task({
         projectId,
+        goalId: goalId || null,
         userId: req.userId,
         name,
         description,
@@ -237,7 +240,8 @@ router.put(
         dueDate,
         isSelectedForToday,
         isRecurring,
-        recurringDays
+        recurringDays,
+        goalId
       } = req.body;
 
       // Find task by ID
@@ -290,6 +294,7 @@ router.put(
       if (isSelectedForToday !== undefined) task.isSelectedForToday = isSelectedForToday;
       if (isRecurring !== undefined) task.isRecurring = isRecurring;
       if (recurringDays !== undefined) task.recurringDays = recurringDays;
+      if (goalId !== undefined) task.goalId = goalId || null;
 
       // Save updated task
       await task.save();
@@ -305,6 +310,21 @@ router.put(
           projectId: project._id,
           projectName: project.name
         });
+        
+        // If the task is linked to a goal, update the goal's status
+        if (task.goalId) {
+          try {
+            // Call the goal status update endpoint
+            await axios.post(
+              `${req.protocol}://${req.get('host')}/api/goals/${task.goalId}/update-status`,
+              {},
+              { headers: { Authorization: req.header('Authorization') } }
+            );
+          } catch (error) {
+            console.error('Error updating goal status:', error);
+            // Don't fail the task update if goal update fails
+          }
+        }
       }
 
       res.json(task);
