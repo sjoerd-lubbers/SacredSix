@@ -17,7 +17,19 @@ const nextConfig = {
   experimental: {
     // Enable app directory features
     appDir: true,
-  }
+  },
+  // Adjust chunk loading strategy
+  compiler: {
+    // Enables the styled-components SWC transform
+    styledComponents: true
+  },
+  transpilePackages: [
+    '@radix-ui/react-accordion',
+    '@radix-ui/react-alert-dialog',
+    '@radix-ui/react-dropdown-menu',
+    '@radix-ui/react-progress',
+    'lucide-react'
+  ]
 }
 
 module.exports = nextConfig

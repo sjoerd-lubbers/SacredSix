@@ -37,6 +37,4 @@ EXPOSE 3000
 ENV PORT=3000
 
 # Start the server
-#CMD ["npm", "start"]
-# Start the server
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]
