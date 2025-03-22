@@ -53,7 +53,6 @@ function Calendar({
         day_hidden: "invisible",
         ...classNames,
       }}
-      // Remove custom components to avoid TypeScript errors
       {...props}
     />
   )
