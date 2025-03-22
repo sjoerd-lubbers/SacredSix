@@ -39,4 +39,4 @@ ENV PORT=3000
 # Start the server
 #CMD ["npm", "start"]
 # Start the server
-CMD ["npm", "dev"]
+CMD ["npm", "run", "dev"]
