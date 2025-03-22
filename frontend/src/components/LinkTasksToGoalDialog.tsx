@@ -178,7 +178,7 @@ export function LinkTasksToGoalDialog({
             <div className="space-y-2">
               {filteredTasks.map(task => {
                 // Check if task is already linked to another goal
-                const isLinkedToOtherGoal = task.goalId && task.goalId !== goalId;
+                const isLinkedToOtherGoal = Boolean(task.goalId && task.goalId !== goalId);
                 
                 return (
                   <div 
