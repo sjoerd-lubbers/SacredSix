@@ -80,14 +80,14 @@ export function GoalItem({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   
   // Get linked tasks
-  const linkedTasks = tasks.filter(task => task.goalId === goal._id)
-  const completedTasks = linkedTasks.filter(task => task.status === "done")
-  const inProgressTasks = linkedTasks.filter(task => task.status === "in_progress")
-  const todoTasks = linkedTasks.filter(task => task.status === "todo")
+  const linkedTasks = tasks.filter(task => task.goalId === goal._id);
+  const completedTasks = linkedTasks.filter(task => task.status === "done");
+  const inProgressTasks = linkedTasks.filter(task => task.status === "in_progress");
+  const todoTasks = linkedTasks.filter(task => task.status === "todo");
   
   const completionPercentage = linkedTasks.length > 0 
     ? Math.round((completedTasks.length / linkedTasks.length) * 100) 
-    : 0
+    : 0;
   
   // Format target date
   const formattedTargetDate = goal.targetDate 
@@ -96,7 +96,7 @@ export function GoalItem({
         month: 'short', 
         day: 'numeric' 
       }) 
-    : null
+    : null;
 
   // Determine goal status based on tasks
   const determineGoalStatus = () => {
