@@ -10,6 +10,7 @@ dotenv.config();
 const authRoutes = require('./routes/auth');
 const projectRoutes = require('./routes/projects');
 const taskRoutes = require('./routes/tasks');
+const goalRoutes = require('./routes/goals');
 const aiRoutes = require('./routes/ai');
 const reflectionRoutes = require('./routes/reflections');
 const sharingRoutes = require('./routes/sharing');
@@ -35,7 +36,8 @@ const corsOptions = {
     // Check if the origin is allowed
     const allowedOrigins = [
       'https://sacred6.ams8.nl',
-      'http://localhost:3000'
+      'http://localhost:3000',
+      'http://localhost:3001'
     ];
     
     // If CORS_ORIGIN is set in environment variables, add it to allowed origins
@@ -74,6 +76,7 @@ mongoose.connect(process.env.MONGODB_URI)
 app.use('/api/auth', authRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/goals', goalRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/reflections', reflectionRoutes);
 app.use('/api/sharing', sharingRoutes);

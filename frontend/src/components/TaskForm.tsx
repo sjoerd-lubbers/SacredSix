@@ -40,9 +40,15 @@ const taskSchema = z.object({
   estimatedTime: z.string().optional(),
   isRecurring: z.boolean().optional().default(false),
   recurringDays: z.array(z.string()).optional().default([]),
+  goalId: z.string().optional(),
 })
 
 type TaskFormValues = z.infer<typeof taskSchema>
+
+interface Goal {
+  _id: string
+  name: string
+}
 
 interface TaskFormProps {
   form: UseFormReturn<TaskFormValues>
@@ -50,9 +56,10 @@ interface TaskFormProps {
   isSubmitting: boolean
   onCancel: () => void
   mode: "create" | "edit"
+  goals?: Goal[]
 }
 
-export function TaskForm({ form, onSubmit, isSubmitting, onCancel, mode }: TaskFormProps) {
+export function TaskForm({ form, onSubmit, isSubmitting, onCancel, mode, goals = [] }: TaskFormProps) {
   return (
     <Form {...form}>
       <form onSubmit={(e) => {
@@ -183,6 +190,37 @@ export function TaskForm({ form, onSubmit, isSubmitting, onCancel, mode }: TaskF
             )}
           />
         </div>
+        
+        {goals.length > 0 && (
+          <FormField
+            control={form.control}
+            name="goalId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Assign to Goal (Optional)</FormLabel>
+                <Select 
+                  onValueChange={field.onChange} 
+                  defaultValue={field.value}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a goal" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    {goals.map((goal) => (
+                      <SelectItem key={goal._id} value={goal._id}>
+                        {goal.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
         <FormField
           control={form.control}
           name="isRecurring"

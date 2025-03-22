@@ -27,6 +27,7 @@ interface Task {
   status: string
   priority: string
   projectId: string
+  goalId?: string | null
   dueDate?: string
   estimatedTime?: number
   isSelectedForToday: boolean
@@ -37,15 +38,21 @@ interface Task {
   updatedAt: string
 }
 
+interface Goal {
+  _id: string
+  name: string
+}
+
 interface TaskItemProps {
   task: Task
   onStatusChange: (taskId: string, newStatus: string) => void
   onEdit: (task: Task) => void
   onDelete: (taskId: string) => void
   setEditDialogOpen: (open: boolean) => void
+  goals?: Goal[]
 }
 
-export function TaskItem({ task, onStatusChange, onEdit, onDelete, setEditDialogOpen }: TaskItemProps) {
+export function TaskItem({ task, onStatusChange, onEdit, onDelete, setEditDialogOpen, goals = [] }: TaskItemProps) {
   const [logs, setLogs] = useState<any[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
 
@@ -145,6 +152,11 @@ export function TaskItem({ task, onStatusChange, onEdit, onDelete, setEditDialog
                 <span className="text-xs bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300 px-2 py-1 rounded-full">
                   Recurring: {task.recurringDays?.map(day => day.slice(0, 3)).join(", ")}
                 </span>
+              )}
+              {task.goalId && (
+                <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
+                  Goal: {goals.find(g => g._id === task.goalId)?.name || 'Unknown'}
+                </Badge>
               )}
               <span className="text-xs text-muted-foreground">
                 Last Changed: {new Date(task.updatedAt).toLocaleDateString()}
