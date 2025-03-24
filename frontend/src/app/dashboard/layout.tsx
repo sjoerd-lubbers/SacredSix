@@ -186,13 +186,13 @@ export default function DashboardLayout({
                   <X className="h-5 w-5" />
                 </Button>
               </div>
-              <nav className="flex-1 p-4 overflow-y-auto">
+              <nav className="flex-1 px-3 py-4 overflow-y-auto">
                 {navSections.map((section, index) => (
-                  <div key={index} className={`mb-8 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "" : "space-y-2"}`}>
+                  <div key={index} className={`transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "mb-4" : "mb-8 space-y-2"}`}>
                     <h3 className={`text-xs font-semibold text-muted-foreground tracking-wider uppercase px-3 truncate transition-opacity transition-transform ${isSidebarCollapsed ? "opacity-0 translate-y-[-10px] duration-100" : "opacity-100 translate-y-0 duration-200"}`}>
                       {section.title}
                     </h3>
-                    <div className={`space-y-1 transition-all duration-300 ease-out ${isSidebarCollapsed ? "" : "mt-1"}`}>
+                    <div className={`transition-all duration-300 ease-out ${isSidebarCollapsed ? "space-y-0.5" : "space-y-1 mt-1"}`}>
                       {section.items.map((item) => {
                         // Check if this is the active route
                         const isActive = pathname === item.href || 
@@ -202,14 +202,14 @@ export default function DashboardLayout({
                           <Link
                             key={item.href}
                             href={item.href}
-                            className={`flex items-center h-9 ${isSidebarCollapsed ? "justify-center" : ""} rounded-md ${isSidebarCollapsed ? "p-[5px]" : "px-3 py-2"} text-sm font-medium
+                            className={`flex items-center ${isSidebarCollapsed ? "h-8" : "h-9"} rounded-md pl-2 pr-3 py-2 text-sm font-medium
                               ${isActive 
                                 ? "bg-primary/10 text-primary font-semibold" 
                                 : "hover:bg-accent hover:text-accent-foreground"
                               }`}
                             title={isSidebarCollapsed ? item.label : ""}
                           >
-                          <div className="w-6 flex items-center justify-center flex-shrink-0 relative z-10">
+                          <div className="w-6 flex items-center justify-center flex-shrink-0 relative z-10 mx-0">
                             <item.icon className={`h-6 w-6 ${isActive ? "text-primary" : ""}`} />
                           </div>
                           <span className={`transition-all transition-opacity transition-transform truncate ${isSidebarCollapsed ? "opacity-0 translate-x-[-10px] absolute duration-100" : "opacity-100 translate-x-0 ml-2 duration-200 max-w-[150px]"}`}>{item.label}</span>
@@ -225,11 +225,11 @@ export default function DashboardLayout({
               
               {/* Admin Section (only for admin users) */}
               {adminSection && (
-                <div className={`mb-8 transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "" : "space-y-2"}`}>
+                <div className={`transition-all duration-300 ease-in-out ${isSidebarCollapsed ? "mb-4" : "mb-8 space-y-2"}`}>
                   <h3 className={`text-xs font-semibold text-muted-foreground tracking-wider uppercase px-3 truncate transition-opacity transition-transform ${isSidebarCollapsed ? "opacity-0 translate-y-[-10px] duration-100" : "opacity-100 translate-y-0 duration-200"}`}>
                     {adminSection.title}
                   </h3>
-                  <div className={`space-y-1 transition-all duration-300 ease-out ${isSidebarCollapsed ? "" : "mt-1"}`}>
+                  <div className={`transition-all duration-300 ease-out ${isSidebarCollapsed ? "space-y-0.5" : "space-y-1 mt-1"}`}>
                     {adminSection.items.map((item) => {
                       // Check if this is the active route
                       const isActive = pathname === item.href || 
@@ -239,14 +239,14 @@ export default function DashboardLayout({
                         <Link
                           key={item.href}
                           href={item.href}
-                          className={`flex items-center h-9 ${isSidebarCollapsed ? "justify-center" : ""} rounded-md ${isSidebarCollapsed ? "p-[5px]" : "px-3 py-2"} text-sm font-medium
+                          className={`flex items-center ${isSidebarCollapsed ? "h-8" : "h-9"} rounded-md pl-2 pr-3 py-2 text-sm font-medium
                             ${isActive 
                               ? "bg-primary/10 text-primary font-semibold" 
                               : "hover:bg-accent hover:text-accent-foreground"
                             }`}
                           title={isSidebarCollapsed ? item.label : ""}
                         >
-                            <div className="w-6 flex items-center justify-center flex-shrink-0 relative z-10">
+                            <div className="w-6 flex items-center justify-center flex-shrink-0 relative z-10 mx-0">
                               <item.icon className={`h-6 w-6 ${isActive ? "text-primary" : ""}`} />
                             </div>
                             <span className={`transition-all transition-opacity transition-transform truncate ${isSidebarCollapsed ? "opacity-0 translate-x-[-10px] absolute duration-100" : "opacity-100 translate-x-0 ml-2 duration-200 max-w-[150px]"}`}>{item.label}</span>
