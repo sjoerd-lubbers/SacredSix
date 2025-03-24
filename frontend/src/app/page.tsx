@@ -2,6 +2,9 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { APP_NAME } from '@/config'
 import AmazonAffiliateButton from '@/components/AmazonAffiliateButton'
+import RegionBasedMonthlyPrice from '@/components/RegionBasedMonthlyPrice'
+import RegionBasedPricing from '@/components/RegionBasedPricing'
+import RegionBasedFreePrice from '@/components/RegionBasedFreePrice'
 
 export default function Home() {
   return (
@@ -169,7 +172,7 @@ export default function Home() {
               </div>
               <h3 className="mb-2 text-xl font-semibold">Focus on Daily Tasks</h3>
               <p className="text-muted-foreground">
-                Select 4-6 high-impact tasks each day that align with your sacred projects. Our AI can help prioritize based on deadlines, importance, and your energy levels.
+                Select 6 tasks each day that align with your sacred projects. Our AI can help prioritize based on deadlines, importance, and your energy levels.
               </p>
             </div>
             <div className="rounded-lg border p-6 shadow-sm">
@@ -237,7 +240,7 @@ export default function Home() {
             {/* Free Plan */}
             <div className="rounded-lg border p-8 shadow-sm hover:shadow-md transition-shadow">
               <h3 className="text-2xl font-bold mb-4">Free Plan</h3>
-              <p className="text-3xl font-bold mb-6">€0 <span className="text-base font-normal text-muted-foreground">forever</span></p>
+              <RegionBasedFreePrice />
               <ul className="space-y-3 mb-8">
                 <li className="flex items-start">
                   <svg className="h-6 w-6 mr-2 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -280,8 +283,8 @@ export default function Home() {
                 <span className="bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-1 rounded">RECOMMENDED</span>
               </div>
               <div className="flex flex-col mb-6">
-                <p className="text-3xl font-bold">€9 <span className="text-base font-normal text-muted-foreground">/ month</span></p>
-                <p className="text-lg font-medium mt-2">or €90 <span className="text-base font-normal text-muted-foreground">/ year (2 months free)</span></p>
+                <RegionBasedMonthlyPrice euPrice="9" nonEuPrice="9" />
+                <RegionBasedPricing euPrice="90" nonEuPrice="90" period="year" />
                 <p className="text-sm text-muted-foreground mt-1">* VAT may apply for EU customers</p>
               </div>
               <ul className="space-y-3 mb-8">
@@ -356,8 +359,8 @@ export default function Home() {
                     <div className="mt-1 text-lg">Unlimited Focus</div>
                   </div>
                 </div>
-                <div className="absolute -top-4 -right-4 w-16 h-16 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center text-xl font-bold">
-                  4-6
+                <div className="absolute -top-4 -right-4 w-16 h-16 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center text-l font-bold">
+                  Weekly
                 </div>
                 <div className="absolute -bottom-4 -left-4 w-16 h-16 bg-secondary text-secondary-foreground rounded-full flex items-center justify-center text-xl font-bold">
                   Daily
