@@ -274,6 +274,7 @@ export default function ProjectTasksPage() {
         headers: { Authorization: `Bearer ${token}` }
       }
 
+      // Step 1: Create the task with basic information (without recurring options)
       const taskData = {
         projectId: project._id,
         name: data.name,
@@ -282,14 +283,30 @@ export default function ProjectTasksPage() {
         status: data.status,
         dueDate: data.dueDate ? new Date(data.dueDate).toISOString() : undefined,
         estimatedTime: data.estimatedTime ? parseInt(data.estimatedTime) : undefined,
-        isRecurring: data.isRecurring,
-        recurringDays: data.recurringDays,
         goalId: data.goalId || null,
       }
 
       const response = await axios.post(apiEndpoint("tasks"), taskData, config)
+      const taskId = response.data._id
 
-      setTasks(prev => [...prev, response.data])
+      // Step 2: If the task should be recurring, update it with recurring options
+      if (data.isRecurring && data.recurringDays && data.recurringDays.length > 0) {
+        await axios.put(
+          apiEndpoint(`tasks/${taskId}`),
+          {
+            name: data.name, // Name is required by the validation
+            isRecurring: true,
+            recurringDays: data.recurringDays
+          },
+          config
+        )
+        
+        // Fetch the updated task
+        const updatedTaskResponse = await axios.get(apiEndpoint(`tasks/${taskId}`), config)
+        setTasks(prev => [...prev, updatedTaskResponse.data])
+      } else {
+        setTasks(prev => [...prev, response.data])
+      }
       
       newTaskForm.reset({
         name: "",
@@ -332,6 +349,7 @@ export default function ProjectTasksPage() {
         headers: { Authorization: `Bearer ${token}` }
       }
 
+      // Step 1: Update the task with basic information (without recurring options)
       const taskData = {
         name: data.name,
         description: data.description,
@@ -339,16 +357,28 @@ export default function ProjectTasksPage() {
         status: data.status,
         dueDate: data.dueDate && data.dueDate.trim() !== "" ? new Date(data.dueDate).toISOString() : null,
         estimatedTime: data.estimatedTime ? parseInt(data.estimatedTime) : undefined,
-        isRecurring: data.isRecurring,
-        recurringDays: data.recurringDays,
         goalId: data.goalId || null,
       }
 
-      const response = await axios.put(apiEndpoint(`tasks/${editingTask._id}`), taskData, config)
+      await axios.put(apiEndpoint(`tasks/${editingTask._id}`), taskData, config)
 
+      // Step 2: Update recurring options in a separate call
+      await axios.put(
+        apiEndpoint(`tasks/${editingTask._id}`),
+        {
+          name: data.name, // Name is required by the validation
+          isRecurring: data.isRecurring,
+          recurringDays: data.recurringDays
+        },
+        config
+      )
+      
+      // Fetch the updated task
+      const updatedTaskResponse = await axios.get(apiEndpoint(`tasks/${editingTask._id}`), config)
+      
       setTasks(prev => 
         prev.map(task => 
-          task._id === editingTask._id ? response.data : task
+          task._id === editingTask._id ? updatedTaskResponse.data : task
         )
       )
       

@@ -181,9 +181,8 @@ export default function TodayPage() {
         isArchived: p.isArchived
       })));
       
-      // If no projects with sacred six tag, use all active projects as a fallback
-      const activeProjectsList = allProjects.filter((p: Project) => !p.isArchived)
-      const projectsToUse = sacredSixProjects.length > 0 ? sacredSixProjects : activeProjectsList
+      // Only use sacred projects - no fallback to all active projects
+      const projectsToUse = sacredSixProjects
       
       const projectIds = projectsToUse.map((project: Project) => project._id)
       
@@ -425,10 +424,30 @@ export default function TodayPage() {
         headers: { Authorization: `Bearer ${token}` }
       }
       
+      // Get all sacred projects
+      const sacredProjects = projects.filter(p => !p.isArchived && p.isSacred)
+      const sacredProjectIds = sacredProjects.map(p => p._id)
+      
+      // Filter selected tasks to only include those from sacred projects
+      const allTasks = [...tasks]
+      const validTaskIds = selectedTaskIds.filter(taskId => {
+        const task = allTasks.find(t => t._id === taskId)
+        return task && sacredProjectIds.includes(task.projectId)
+      })
+      
+      // If some tasks were filtered out, show a warning
+      if (validTaskIds.length < selectedTaskIds.length) {
+        toast({
+          variant: "destructive",
+          title: "Some tasks were not saved",
+          description: "Only tasks from Sacred Projects can be included in the Daily Sacred 6.",
+        })
+      }
+      
       // Update the selected tasks on the server
       await axios.put(
         apiEndpoint("tasks/today/select"),
-        { taskIds: selectedTaskIds },
+        { taskIds: validTaskIds },
         config
       )
 
@@ -503,7 +522,7 @@ export default function TodayPage() {
       <div className="flex flex-col justify-between space-y-4 md:flex-row md:items-center md:space-y-0">
         <div>
           <h1 className="text-3xl font-bold">Daily Sacred 6</h1>
-          <p className="text-muted-foreground">Focus on these 6 tasks from your Sacred Six projects to maximize your productivity</p>
+          <p className="text-muted-foreground">Focus on these 6 tasks from your Sacred Projects only to maximize your productivity</p>
         </div>
         {!isSelectionMode ? (
           <div className="flex space-x-2">
@@ -794,7 +813,7 @@ export default function TodayPage() {
               <div className="mb-4">
                 <h3 className="text-lg font-medium">All Eligible Tasks</h3>
                 <p className="text-sm text-muted-foreground">
-                  Tasks from sacred projects. {selectedTaskIds.length}/6 selected.
+                  Tasks from Sacred Projects only. {selectedTaskIds.length}/6 selected.
                 </p>
                 {selectedTaskIds.length > 0 && selectedTaskIds.length < 6 && (
                   <p className="text-sm text-green-600 dark:text-green-400 mt-1">
