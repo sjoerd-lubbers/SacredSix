@@ -111,7 +111,7 @@ export default function Home() {
                   <span className="text-primary mr-2">3️⃣</span> Eliminate Distractions
                 </h4>
                 <p className="text-muted-foreground">
-                  Anything that doesn't align with your Sacred Six projects is ignored to maintain your focus.
+                  Anything that doesn't align with your Sacred 6 projects is ignored to maintain your focus.
                 </p>
               </div>
               
@@ -376,7 +376,7 @@ export default function Home() {
         <div className="container mx-auto px-4">
           <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
             <div className="text-center md:text-left">
-              <div className="text-lg font-semibold">{APP_NAME} Productivity Method</div>
+              <div className="text-lg font-semibold">Sacred 6 Productivity Method</div>
               <div className="text-base font-medium mt-1">by SAL CONSULTANCY</div>
               <div className="text-sm text-muted-foreground mt-1">© 2025 All rights reserved</div>
             </div>
