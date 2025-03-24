@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { APP_NAME } from '@/config'
+import AmazonAffiliateButton from '@/components/AmazonAffiliateButton'
 
 export default function Home() {
   return (
@@ -13,6 +14,9 @@ export default function Home() {
               <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl">
                 Focus on What Truly Matters with {APP_NAME}
               </h1>
+              <p className="text-xl">
+                The official implementation of the Sacred 6 method developed by JB Glossinger, aka the MorningCoach.
+              </p>
               <p className="text-xl">
                 A focused productivity system that ensures you only work on 6 core projects that truly matter, helping you regain control of your time and energy.
               </p>
@@ -39,6 +43,31 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {/* About JB Glossinger Section */}
+      <section className="py-16 bg-secondary/20">
+        <div className="container mx-auto px-4">
+          <h2 className="mb-8 text-center text-3xl font-bold">About the Sacred 6 Method</h2>
+          <div className="max-w-3xl mx-auto text-center mb-8">
+            <p className="text-xl mb-4">
+              The Sacred 6 method was developed by JB Glossinger, known as the MorningCoach, to help people achieve extraordinary results through focused action.
+            </p>
+            <p className="text-lg mb-6">
+              JB Glossinger is a renowned motivational speaker, author, and personal development expert who has helped thousands of people transform their lives through his practical productivity systems and morning motivation.
+            </p>
+            <div className="flex flex-col items-center justify-center p-6 bg-card rounded-lg border shadow-sm max-w-md mx-auto">
+              <h3 className="text-xl font-semibold mb-3">Get the Book</h3>
+              <p className="text-base mb-4">
+                Discover the complete Sacred 6 methodology in JB Glossinger's transformative book.
+              </p>
+              <AmazonAffiliateButton 
+                nlLink="https://amzn.to/4bZQ9UC"
+                usLink="https://amzn.to/4iB5HRe"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Core Method Section */}
       <section className="py-16 bg-secondary/30">
@@ -200,6 +229,106 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="py-16 bg-background">
+        <div className="container mx-auto px-4">
+          <h2 className="mb-12 text-center text-3xl font-bold">Choose Your Plan</h2>
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 max-w-4xl mx-auto">
+            {/* Free Plan */}
+            <div className="rounded-lg border p-8 shadow-sm hover:shadow-md transition-shadow">
+              <h3 className="text-2xl font-bold mb-4">Free Plan</h3>
+              <p className="text-3xl font-bold mb-6">€0 <span className="text-base font-normal text-muted-foreground">forever</span></p>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start">
+                  <svg className="h-6 w-6 mr-2 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>Up to 3 Sacred Projects</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-6 w-6 mr-2 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>Basic task management</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-6 w-6 mr-2 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>Progress tracking</span>
+                </li>
+                <li className="flex items-start text-muted-foreground">
+                  <svg className="h-6 w-6 mr-2 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M18 6 6 18"/>
+                    <path d="m6 6 12 12"/>
+                  </svg>
+                  <span>No AI assistance</span>
+                </li>
+              </ul>
+              <Button asChild size="lg" variant="outline" className="w-full">
+                <Link href="/register">Get Started</Link>
+              </Button>
+            </div>
+            
+            {/* Premium Plan */}
+            <div className="rounded-lg border p-8 shadow-sm hover:shadow-md transition-shadow bg-primary/5 border-primary/20">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-2xl font-bold">Premium Plan</h3>
+                <span className="bg-primary text-primary-foreground text-xs font-semibold px-2.5 py-1 rounded">RECOMMENDED</span>
+              </div>
+              <div className="flex flex-col mb-6">
+                <p className="text-3xl font-bold">€9 <span className="text-base font-normal text-muted-foreground">/ month</span></p>
+                <p className="text-lg font-medium mt-2">or €90 <span className="text-base font-normal text-muted-foreground">/ year (2 months free)</span></p>
+                <p className="text-sm text-muted-foreground mt-1">* VAT may apply for EU customers</p>
+              </div>
+              <ul className="space-y-3 mb-8">
+                <li className="flex items-start">
+                  <svg className="h-6 w-6 mr-2 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>Unlimited Sacred Projects</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-6 w-6 mr-2 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>Advanced task management</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-6 w-6 mr-2 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>Detailed analytics & insights</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-6 w-6 mr-2 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>AI-powered task suggestions</span>
+                </li>
+                <li className="flex items-start">
+                  <svg className="h-6 w-6 mr-2 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                  </svg>
+                  <span>Priority support</span>
+                </li>
+              </ul>
+              <Button asChild size="lg" className="w-full">
+                <Link href="/register">Get Premium</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-16 bg-primary text-primary-foreground">
         <div className="container mx-auto px-4">
@@ -207,7 +336,7 @@ export default function Home() {
             <div className="md:w-1/2">
               <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Productivity?</h2>
               <p className="text-xl mb-6">
-                Start focusing on what truly matters with the {APP_NAME} method. Create your account today and begin your journey to more intentional productivity.
+                Start focusing on what truly matters with JB Glossinger's Sacred 6 method. Create your account today and begin your journey to more intentional productivity.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button asChild size="lg" variant="secondary">
@@ -245,22 +374,32 @@ export default function Home() {
           <div className="flex flex-col items-center justify-between space-y-4 md:flex-row md:space-y-0">
             <div className="text-center md:text-left">
               <div className="text-lg font-semibold">{APP_NAME} Productivity Method</div>
-              <div className="text-sm text-muted-foreground">© 2025 All rights reserved</div>
+              <div className="text-base font-medium mt-1">by SAL CONSULTANCY</div>
+              <div className="text-sm text-muted-foreground mt-1">© 2025 All rights reserved</div>
             </div>
-            <div className="flex space-x-6">
-              <Link href="/login" className="text-sm font-medium text-foreground hover:text-primary">
-                Login
-              </Link>
-              <Link href="/register" className="text-sm font-medium text-foreground hover:text-primary">
-                Register
-              </Link>
-              <Link href="/privacy" className="text-sm font-medium text-foreground hover:text-primary">
-                Privacy
-              </Link>
+            <div className="flex flex-col space-y-4 md:space-y-0 md:flex-row md:space-x-6 items-center">
+              <div className="flex items-center space-x-2 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-message-circle">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                </svg>
+                <span className="font-medium">+31 6 309 189 81</span>
+              </div>
+              <div className="flex space-x-6">
+                <Link href="/login" className="text-sm font-medium text-foreground hover:text-primary">
+                  Login
+                </Link>
+                <Link href="/register" className="text-sm font-medium text-foreground hover:text-primary">
+                  Register
+                </Link>
+                <Link href="/privacy" className="text-sm font-medium text-foreground hover:text-primary">
+                  Privacy
+                </Link>
+              </div>
             </div>
           </div>
         </div>
       </footer>
+
     </div>
   )
 }
