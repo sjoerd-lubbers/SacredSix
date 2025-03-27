@@ -23,6 +23,20 @@ const UserSchema = new mongoose.Schema({
     enum: ['user', 'admin'],
     default: 'user'
   },
+  // Subscription information
+  subscription: {
+    type: String,
+    enum: ['free', 'premium'],
+    default: 'free'
+  },
+  subscriptionValidUntil: {
+    type: Date,
+    default: null
+  },
+  autoRenew: {
+    type: Boolean,
+    default: true
+  },
   // Sacred Six elements
   mission: {
     type: String,

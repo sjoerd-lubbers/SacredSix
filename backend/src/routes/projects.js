@@ -26,7 +26,16 @@ router.post(
     try {
       const { name, description, tags, isSacred } = req.body;
 
-      // If trying to create a sacred project, check if user already has 6 sacred projects
+      // Get user to check subscription status
+      const user = await User.findById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Check project limits based on subscription
+      const isFreePlan = user.subscription === 'free';
+      
+      // If trying to create a sacred project, check if user has reached their limit
       if (isSacred) {
         const sacredProjectsCount = await Project.countDocuments({
           ownerId: req.userId,
@@ -34,10 +43,27 @@ router.post(
           isArchived: false
         });
 
-        if (sacredProjectsCount >= 6) {
+        const maxSacredProjects = isFreePlan ? 3 : 6;
+        
+        if (sacredProjectsCount >= maxSacredProjects) {
           return res.status(400).json({ 
-            message: 'Maximum of 6 sacred projects allowed. Please unmark an existing project as sacred first.' 
+            message: `Maximum of ${maxSacredProjects} sacred projects allowed for your ${user.subscription} plan. Please upgrade your subscription or unmark an existing project as sacred.` 
           });
+        }
+      } else {
+        // If creating a non-sacred project, check if free user has reached their limit
+        if (isFreePlan) {
+          const nonSacredProjectsCount = await Project.countDocuments({
+            ownerId: req.userId,
+            isSacred: false,
+            isArchived: false
+          });
+          
+          if (nonSacredProjectsCount >= 3) {
+            return res.status(400).json({ 
+              message: 'Maximum of 3 other projects allowed for free plan. Please upgrade to premium for unlimited projects.' 
+            });
+          }
         }
       }
 
@@ -304,7 +330,16 @@ router.put(
         }
       }
 
-      // If trying to mark a project as sacred, check if user already has 6 sacred projects
+      // Get user to check subscription status
+      const user = await User.findById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Check project limits based on subscription
+      const isFreePlan = user.subscription === 'free';
+      
+      // If trying to mark a project as sacred, check if user has reached their limit
       if (isSacred && !project.isSacred) {
         const sacredProjectsCount = await Project.countDocuments({
           ownerId: req.userId,
@@ -312,9 +347,26 @@ router.put(
           isArchived: false
         });
 
-        if (sacredProjectsCount >= 6) {
+        const maxSacredProjects = isFreePlan ? 3 : 6;
+        
+        if (sacredProjectsCount >= maxSacredProjects) {
           return res.status(400).json({ 
-            message: 'Maximum of 6 sacred projects allowed. Please unmark an existing project as sacred first.' 
+            message: `Maximum of ${maxSacredProjects} sacred projects allowed for your ${user.subscription} plan. Please upgrade your subscription or unmark an existing project as sacred.` 
+          });
+        }
+      }
+      
+      // If changing from sacred to non-sacred, check if free user has reached their limit
+      if (!isSacred && project.isSacred && isFreePlan) {
+        const nonSacredProjectsCount = await Project.countDocuments({
+          ownerId: req.userId,
+          isSacred: false,
+          isArchived: false
+        });
+        
+        if (nonSacredProjectsCount >= 3) {
+          return res.status(400).json({ 
+            message: 'Maximum of 3 other projects allowed for free plan. Cannot change to non-sacred. Please upgrade to premium for unlimited projects.' 
           });
         }
       }

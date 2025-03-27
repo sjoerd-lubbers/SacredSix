@@ -30,6 +30,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/components/ui/use-toast"
 import { apiEndpoint } from "@/config"
 import { FeedbackTab } from "@/components/FeedbackTab"
+import SubscriptionManagementTab from "@/components/SubscriptionManagementTab"
+import TransactionsTab from "@/components/TransactionsTab"
 import {
   Table,
   TableBody,
@@ -362,10 +364,18 @@ export default function AdminPage() {
       <Tabs defaultValue="users">
         <TabsList>
           <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+          <TabsTrigger value="transactions">Transactions</TabsTrigger>
           <TabsTrigger value="activity">Activity Log</TabsTrigger>
           <TabsTrigger value="auth-logs">Authentication Logs</TabsTrigger>
           <TabsTrigger value="feedback">User Feedback</TabsTrigger>
         </TabsList>
+        <TabsContent value="subscriptions" className="space-y-4">
+          <SubscriptionManagementTab />
+        </TabsContent>
+        <TabsContent value="transactions" className="space-y-4">
+          <TransactionsTab />
+        </TabsContent>
         <TabsContent value="users" className="space-y-4">
           <div className="flex items-center space-x-2">
             <Search className="h-4 w-4 text-muted-foreground" />
