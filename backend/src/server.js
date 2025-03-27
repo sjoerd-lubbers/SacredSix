@@ -20,6 +20,7 @@ const dailyCompletionRoutes = require('./routes/dailyCompletion');
 const dataExportRoutes = require('./routes/dataExport');
 const adminRoutes = require('./routes/admin');
 const feedbackRoutes = require('./routes/feedback');
+const paymentRoutes = require('./routes/payments');
 
 // Import utilities
 const { initSchedulers } = require('./utils/scheduler');
@@ -64,6 +65,12 @@ app.use(express.json());
 // Add a middleware to log all requests for debugging
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url} - Origin: ${req.headers.origin}`);
+  
+  // Log request body for debugging
+  if (req.method === 'PUT' || req.method === 'POST') {
+    console.log('Request body:', req.body);
+  }
+  
   next();
 });
 
@@ -86,6 +93,7 @@ app.use('/api/daily-completion', dailyCompletionRoutes);
 app.use('/api/data-export', dataExportRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/feedback', feedbackRoutes);
+app.use('/api/payments', paymentRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -94,9 +102,27 @@ app.get('/', (req, res) => {
 
 // Start server
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-  
-  // Initialize schedulers after server starts
-  initSchedulers();
-});
+const startServer = (port) => {
+  try {
+    const server = app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+      
+      // Initialize schedulers after server starts
+      initSchedulers();
+    });
+    
+    server.on('error', (error) => {
+      if (error.code === 'EADDRINUSE') {
+        console.log(`Port ${port} is in use, trying ${port + 1}`);
+        startServer(port + 1);
+      } else {
+        console.error('Server error:', error);
+      }
+    });
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer(PORT);

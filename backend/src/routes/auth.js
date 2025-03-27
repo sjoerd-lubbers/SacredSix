@@ -73,6 +73,8 @@ router.post(
               name: user.name,
               email: user.email,
               role: user.role,
+              subscription: user.subscription,
+              subscriptionValidUntil: user.subscriptionValidUntil,
               mission: user.mission,
               missionLastValidated: user.missionLastValidated,
               values: user.values,
@@ -173,6 +175,8 @@ router.post(
               name: user.name,
               email: user.email,
               role: user.role,
+              subscription: user.subscription,
+              subscriptionValidUntil: user.subscriptionValidUntil,
               mission: user.mission,
               missionLastValidated: user.missionLastValidated,
               values: user.values,
@@ -417,6 +421,78 @@ router.put(
 
       // Save user
       await user.save();
+
+      // Return updated user without password
+      const updatedUser = await User.findById(req.userId).select('-password');
+      res.json(updatedUser);
+    } catch (error) {
+      console.error(error.message);
+      res.status(500).send('Server error');
+    }
+  }
+);
+
+// @route   PUT /api/auth/subscription
+// @desc    Update user's subscription status
+// @access  Private
+router.put(
+  '/subscription',
+  [
+    auth,
+    body('subscription').isIn(['free', 'premium']),
+    body('subscriptionValidUntil').optional().isISO8601(),
+    body('autoRenew').optional().isBoolean()
+  ],
+  async (req, res) => {
+    // Check for validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { subscription, subscriptionValidUntil, autoRenew } = req.body;
+
+    try {
+      // Find user
+      const user = await User.findById(req.userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+
+      // Update subscription information
+      user.subscription = subscription;
+      
+      // Update auto-renew if provided
+      if (autoRenew !== undefined) {
+        user.autoRenew = autoRenew;
+      }
+      
+      if (subscriptionValidUntil) {
+        user.subscriptionValidUntil = new Date(subscriptionValidUntil);
+      } else if (subscription === 'premium') {
+        // If upgrading to premium without a specific date, set to 1 month from now
+        const oneMonthFromNow = new Date();
+        oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+        user.subscriptionValidUntil = oneMonthFromNow;
+      } else {
+        // If downgrading to free, clear the valid until date
+        user.subscriptionValidUntil = null;
+      }
+
+      // Save user
+      await user.save();
+
+      // Log the subscription update
+      const activityLog = new ActivityLog({
+        type: 'subscription_update',
+        userId: user._id,
+        email: user.email,
+        ipAddress: req.ip || 'unknown',
+        userAgent: req.headers['user-agent'] || 'unknown',
+        details: `User updated subscription to ${subscription}${autoRenew !== undefined ? `, auto-renew: ${autoRenew}` : ''}`,
+        success: true
+      });
+      await activityLog.save();
 
       // Return updated user without password
       const updatedUser = await User.findById(req.userId).select('-password');

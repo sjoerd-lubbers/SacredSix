@@ -38,7 +38,7 @@ export default function Home() {
                   <div className="text-center">
                     <div className="text-6xl font-bold">6</div>
                     <div className="mt-2 text-lg">Projects</div>
-                    <div className="mt-1 text-sm">6 Daily Sacred Tasks</div>
+                    <div className="mt-1 text-sm">Your Daily Sacred 6</div>
                   </div>
                 </div>
               </div>
@@ -99,7 +99,7 @@ export default function Home() {
               
               <div className="rounded-lg border p-6 shadow-sm">
                 <h4 className="text-xl font-medium mb-2 flex items-center">
-                  <span className="text-primary mr-2">2️⃣</span> Work on 6 Daily Sacred Tasks
+                  <span className="text-primary mr-2">2️⃣</span> Work on Your Daily Sacred 6
                 </h4>
                 <p className="text-muted-foreground">
                   Every day, complete a maximum of 6 actions that contribute to these projects for maximum impact.
@@ -170,7 +170,7 @@ export default function Home() {
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
                 2
               </div>
-              <h3 className="mb-2 text-xl font-semibold">Focus on Daily Tasks</h3>
+              <h3 className="mb-2 text-xl font-semibold">Focus on Your Daily Sacred 6</h3>
               <p className="text-muted-foreground">
                 Select 6 tasks each day that align with your sacred projects. Our AI can help prioritize based on deadlines, importance, and your energy levels.
               </p>
@@ -247,7 +247,7 @@ export default function Home() {
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                     <polyline points="22 4 12 14.01 9 11.01"/>
                   </svg>
-                  <span>Up to 3 Sacred Projects</span>
+                  <span>Up to 3 sacred projects and 3 other projects</span>
                 </li>
                 <li className="flex items-start">
                   <svg className="h-6 w-6 mr-2 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -293,7 +293,7 @@ export default function Home() {
                     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
                     <polyline points="22 4 12 14.01 9 11.01"/>
                   </svg>
-                  <span>Unlimited Sacred Projects</span>
+                  <span>6 sacred projects and unlimited other projects</span>
                 </li>
                 <li className="flex items-start">
                   <svg className="h-6 w-6 mr-2 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

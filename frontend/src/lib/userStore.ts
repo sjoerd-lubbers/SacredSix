@@ -8,6 +8,9 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  subscription: 'free' | 'premium';
+  subscriptionValidUntil: string | null;
+  autoRenew: boolean;
   mission: string;
   values: string[];
   alignment: string;
@@ -25,6 +28,7 @@ interface UserState {
   logout: () => void;
   loadUser: () => Promise<boolean>;
   updateSacredSix: (data: { mission?: string; values?: string[]; alignment?: string }) => Promise<boolean>;
+  updateSubscription: (data: { subscription: 'free' | 'premium', subscriptionValidUntil?: string, autoRenew?: boolean }) => Promise<boolean>;
 }
 
 export const useUserStore = create<UserState>((set) => ({
@@ -173,6 +177,43 @@ export const useUserStore = create<UserState>((set) => ({
       set({
         isLoading: false,
         error: error instanceof Error ? error.message : 'Failed to update Sacred Six'
+      });
+      
+      return false;
+    }
+  },
+  
+  updateSubscription: async (data) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      set({ error: 'Not authenticated' });
+      return false;
+    }
+    
+    set({ isLoading: true, error: null });
+    
+    try {
+      const config = {
+        headers: { Authorization: `Bearer ${token}` }
+      };
+      
+      const response = await axios.put(
+        apiEndpoint("auth/subscription"),
+        data,
+        config
+      );
+      
+      set({
+        user: response.data,
+        isLoading: false
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      set({
+        isLoading: false,
+        error: error instanceof Error ? error.message : 'Failed to update subscription'
       });
       
       return false;

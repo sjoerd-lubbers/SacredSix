@@ -5,6 +5,8 @@ import axios from "axios"
 import { Save } from "lucide-react"
 import ApiKeysTab from "@/components/ApiKeysTab"
 import DataExportTab from "@/components/DataExportTab"
+import SubscriptionInfo from "@/components/SubscriptionInfo"
+import { useUserStore } from "@/lib/userStore"
 
 import { Button } from "@/components/ui/button"
 import { useToast } from "@/components/ui/use-toast"
@@ -52,7 +54,7 @@ type NotificationsFormValues = z.infer<typeof notificationsFormSchema>
 
 export default function SettingsPage() {
   const { toast } = useToast()
-  const [user, setUser] = useState<any>(null)
+  const { user, loadUser } = useUserStore()
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -74,21 +76,26 @@ export default function SettingsPage() {
   })
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser)
-        setUser(parsedUser)
-        profileForm.reset({
-          name: parsedUser.name || "",
-          email: parsedUser.email || "",
-        })
-      } catch (error) {
-        console.error("Failed to parse user data:", error)
-      }
+    // Load user data from the store
+    const fetchUserData = async () => {
+      setIsLoading(true);
+      await loadUser();
+      setIsLoading(false);
+    };
+    
+    fetchUserData();
+    // Only run this effect once on component mount
+  }, [loadUser]);
+  
+  // Update form values when user data changes
+  useEffect(() => {
+    if (user) {
+      profileForm.reset({
+        name: user.name || "",
+        email: user.email || "",
+      });
     }
-    setIsLoading(false)
-  }, [profileForm])
+  }, [user, profileForm]);
 
   const onProfileSubmit = async (data: ProfileFormValues) => {
     setIsSaving(true)
@@ -104,10 +111,8 @@ export default function SettingsPage() {
       const updateData = { name: data.name };
       const response = await axios.put(apiEndpoint("auth/profile"), updateData, config);
       
-      // Update local storage with the response from the server
-      const updatedUser = response.data;
-      localStorage.setItem("user", JSON.stringify(updatedUser));
-      setUser(updatedUser);
+      // Reload user data from the server
+      await loadUser();
 
       toast({
         title: "Profile updated",
@@ -168,12 +173,16 @@ export default function SettingsPage() {
       </div>
       <hr className="my-4 border-t border-gray-200 dark:border-gray-700" />
       <Tabs defaultValue="profile" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="subscription">Subscription</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="api-keys">API Keys</TabsTrigger>
           <TabsTrigger value="data-export">Export/Import</TabsTrigger>
         </TabsList>
+        <TabsContent value="subscription" className="mt-6">
+          <SubscriptionInfo />
+        </TabsContent>
         <TabsContent value="profile" className="mt-6">
           <Card>
             <CardHeader>

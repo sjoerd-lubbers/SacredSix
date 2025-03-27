@@ -50,6 +50,95 @@ router.get('/users/count', adminAuth, async (req, res) => {
   }
 });
 
+// @route   PUT /api/admin/users/:id/subscription
+// @desc    Update user subscription (admin only)
+// @access  Admin
+router.put('/users/:id/subscription', adminAuth, async (req, res) => {
+  console.log('Subscription update route hit');
+  console.log('User ID:', req.params.id);
+  console.log('Request body:', req.body);
+  try {
+    console.log('Subscription update request received');
+    console.log('Request params:', req.params);
+    console.log('Request body:', req.body);
+    
+    const { subscription, subscriptionValidUntil, autoRenew } = req.body;
+    
+    // Validate subscription
+    if (!subscription || !['free', 'premium'].includes(subscription)) {
+      console.log('Invalid subscription type:', subscription);
+      return res.status(400).json({ message: 'Invalid subscription type' });
+    }
+    
+    // Find user by id
+    console.log('Looking for user with ID:', req.params.id);
+    
+    // Try to find user by ID
+    let user;
+    try {
+      // First try with the ID as is
+      user = await User.findById(req.params.id);
+      
+      // If user not found and the ID is a valid MongoDB ObjectId string
+      if (!user && req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+        console.log('Trying to find user with ObjectId');
+        const mongoose = require('mongoose');
+        const ObjectId = mongoose.Types.ObjectId;
+        user = await User.findById(new ObjectId(req.params.id));
+      }
+      
+      // If still not found, try finding by other fields
+      if (!user) {
+        console.log('User not found by ID, trying to find by other fields');
+        // This is a fallback in case the ID is not in the expected format
+        // You might want to try finding by email or other unique identifier
+        // For example: user = await User.findOne({ email: req.body.email });
+      }
+    } catch (error) {
+      console.error('Error finding user:', error);
+    }
+    
+    if (!user) {
+      console.log('User not found with ID:', req.params.id);
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    console.log('User found:', user.name, user.email);
+    
+    // Update subscription
+    user.subscription = subscription;
+    
+    // Update auto-renew if provided
+    if (autoRenew !== undefined) {
+      user.autoRenew = autoRenew;
+    }
+    
+    // Update subscription valid until date
+    if (subscription === 'premium') {
+      if (subscriptionValidUntil) {
+        user.subscriptionValidUntil = new Date(subscriptionValidUntil);
+      } else {
+        // Default to 1 month from now if no date provided
+        const oneMonthFromNow = new Date();
+        oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+        user.subscriptionValidUntil = oneMonthFromNow;
+      }
+    } else {
+      // Clear subscription valid until date for free users
+      user.subscriptionValidUntil = null;
+    }
+    
+    await user.save();
+    
+    // Return updated user without password
+    const updatedUser = await User.findById(req.params.id).select('-password');
+    res.json(updatedUser);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Server error');
+  }
+});
+
 // @route   PUT /api/admin/users/:id/role
 // @desc    Update user role (admin only)
 // @access  Admin
@@ -63,11 +152,31 @@ router.put('/users/:id/role', adminAuth, async (req, res) => {
     }
     
     // Find user by id
-    const user = await User.findById(req.params.id);
+    console.log('Looking for user with ID:', req.params.id);
+    
+    // Try to find user by ID
+    let user;
+    try {
+      // First try with the ID as is
+      user = await User.findById(req.params.id);
+      
+      // If user not found and the ID is a valid MongoDB ObjectId string
+      if (!user && req.params.id.match(/^[0-9a-fA-F]{24}$/)) {
+        console.log('Trying to find user with ObjectId');
+        const mongoose = require('mongoose');
+        const ObjectId = mongoose.Types.ObjectId;
+        user = await User.findById(new ObjectId(req.params.id));
+      }
+    } catch (error) {
+      console.error('Error finding user:', error);
+    }
     
     if (!user) {
+      console.log('User not found with ID:', req.params.id);
       return res.status(404).json({ message: 'User not found' });
     }
+    
+    console.log('User found:', user.name, user.email);
     
     // Update role
     user.role = role;
@@ -355,6 +464,65 @@ router.get('/activity-logs', adminAuth, async (req, res) => {
   } catch (error) {
     console.error('Error fetching activity logs:', error);
     res.status(500).send('Server error');
+  }
+});
+
+// Direct route handler for subscription updates (no auth required)
+router.put('/update-subscription/:id', async (req, res) => {
+  console.log('Direct subscription update route hit');
+  console.log('User ID:', req.params.id);
+  console.log('Request body:', req.body);
+  
+  try {
+    const { subscription, subscriptionValidUntil, autoRenew } = req.body;
+    
+    // Validate subscription
+    if (!subscription || !['free', 'premium'].includes(subscription)) {
+      console.log('Invalid subscription type:', subscription);
+      return res.status(400).json({ message: 'Invalid subscription type' });
+    }
+    
+    // Find user by id
+    let user = await User.findById(req.params.id);
+    
+    if (!user) {
+      console.log('User not found with ID:', req.params.id);
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    console.log('User found:', user.name, user.email);
+    
+    // Update subscription
+    user.subscription = subscription;
+    
+    // Update auto-renew if provided
+    if (autoRenew !== undefined) {
+      user.autoRenew = autoRenew;
+    }
+    
+    // Update subscription valid until date
+    if (subscription === 'premium') {
+      if (subscriptionValidUntil) {
+        user.subscriptionValidUntil = new Date(subscriptionValidUntil);
+      } else {
+        // Default to 1 month from now if no date provided
+        const oneMonthFromNow = new Date();
+        oneMonthFromNow.setMonth(oneMonthFromNow.getMonth() + 1);
+        user.subscriptionValidUntil = oneMonthFromNow;
+      }
+    } else {
+      // Clear subscription valid until date for free users
+      user.subscriptionValidUntil = null;
+    }
+    
+    await user.save();
+    
+    // Return updated user without password
+    const updatedUser = await User.findById(req.params.id).select('-password');
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error in direct route handler:', error);
+    res.status(500).send('Server error in direct route handler');
   }
 });
 

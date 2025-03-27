@@ -4,7 +4,7 @@ const ActivityLogSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    enum: ['login', 'login_failed', 'register', 'logout', 'password_reset', 'other'],
+    enum: ['login', 'login_failed', 'register', 'logout', 'password_reset', 'subscription_update', 'other'],
     default: 'other'
   },
   userId: {
